@@ -14,6 +14,7 @@
   visibility: hidden;
   transition: opacity var(--transition-normal), visibility var(--transition-normal);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .modal-overlay.active {
@@ -28,6 +29,8 @@
   max-width: 960px;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
+  touch-action: pan-y;
   box-shadow: var(--shadow-xl);
   border: 1px solid var(--border-light);
   transform: translateY(20px) scale(0.98);
@@ -72,6 +75,7 @@
   grid-template-columns: 1.1fr 1fr;
   gap: 32px;
   padding: 32px;
+  overflow-x: hidden;
 }
 
 /* Gallery Component with Black Sashes and High-Visibility Arrow Buttons */
