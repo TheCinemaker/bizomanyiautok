@@ -120,8 +120,30 @@ class DataService {
 
   // ---------------------------------------------------------------- Írás ----
 
+  async ensureActiveSession() {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+
+    try {
+      const { data, error } = await this.supabase.auth.getSession();
+      if (!error && data?.session) {
+        return true;
+      }
+      
+      // Munkamenet frissítése gyenge hálózat esetén
+      const { data: refreshData, error: refreshError } = await this.supabase.auth.refreshSession();
+      if (!refreshError && refreshData?.session) {
+        return true;
+      }
+    } catch (e) {
+      console.warn('Munkamenet frissítési kísérlet sikertelen:', e);
+    }
+
+    throw new Error('A bejelentkezési munkamenet lejárt vagy megszakadt. Kérjük, jelentkezz be újra az Adminisztráció felületen!');
+  }
+
   async addCar(carData) {
     if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
 
     // Az updated_at-ot szándékosan nem a kliens küldi: adatbázis-trigger tartja
     // karban (lásd supabase_setup.sql). Így a mentés akkor sem hasal el, ha a
@@ -144,6 +166,7 @@ class DataService {
 
   async updateCar(id, carData) {
     if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
 
     const payload = { ...carData };
     delete payload.id;
@@ -159,13 +182,18 @@ class DataService {
     if (error) throw this.describeWriteError(error);
 
     if (!data || data.length === 0) {
-      throw new Error('A módosítás nem ment végbe. Lehet, hogy lejárt a bejelentkezés - lépj be újra.');
+      const user = await this.getCurrentUser();
+      if (!user) {
+        throw new Error('A bejelentkezési munkamenet lejárt. Kérjük, jelentkezz be újra!');
+      }
+      throw new Error('A módosítás nem ment végbe az adatbázisban. Kérjük, ellenőrizd az internetkapcsolatot és próbáld újra!');
     }
     return data[0];
   }
 
   async deleteCar(id) {
     if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
 
     const { data, error } = await this.supabase
       .from('cars')
@@ -176,7 +204,11 @@ class DataService {
     if (error) throw this.describeWriteError(error);
 
     if (!data || data.length === 0) {
-      throw new Error('A törlés nem ment végbe. Lehet, hogy lejárt a bejelentkezés - lépj be újra.');
+      const user = await this.getCurrentUser();
+      if (!user) {
+        throw new Error('A törlés nem ment végbe. A munkamenet lejárt - jelentkezz be újra!');
+      }
+      throw new Error('A törlés nem ment végbe. Kérjük, ellenőrizd a hálózati kapcsolatot és próbáld újra!');
     }
     return true;
   }

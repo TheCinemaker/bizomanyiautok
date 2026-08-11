@@ -597,9 +597,13 @@ export class AdminPanel {
       this.resetForm();
       this.onCarsUpdated();
     } catch (err) {
-      // Korábban ez a hiba némán elveszett: az admin azt hitte, mentett.
       console.error(err);
-      showToast(err.message || 'A mentés nem sikerült.', 'error');
+      const errMsg = err.message || 'A mentés nem sikerült.';
+      showToast(errMsg, 'error');
+
+      if (/munkamenet|lejárt|bejelentkezz/i.test(errMsg)) {
+        this.openLoginModal();
+      }
     } finally {
       submitBtn.disabled = false;
       // Sikeres mentés után a resetForm már törölte az editingCarId-t, így

@@ -3,6 +3,10 @@ dist
 .DS_Store
 *.local
 
+# Vite ideiglenes config fájljai
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
 # Környezeti változók - SOHA ne kerüljenek a repóba
 .env
 .env.*
