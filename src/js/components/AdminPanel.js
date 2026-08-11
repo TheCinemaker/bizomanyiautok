@@ -21,9 +21,9 @@ export class AdminPanel {
 
     const startPress = () => {
       pressTimer = setTimeout(() => {
-        showToast('Admin belépés kezdeményezve...', 'info');
+        showToast('Admin belépés...', 'info');
         this.openPinModal();
-      }, 1200); // 1.2 seconds long press
+      }, 1200);
     };
 
     const cancelPress = () => {
@@ -38,7 +38,6 @@ export class AdminPanel {
     logoEl.addEventListener('touchend', cancelPress);
     logoEl.addEventListener('touchcancel', cancelPress);
 
-    // Also support direct admin button click
     const adminBtn = document.getElementById('btn-admin-header');
     if (adminBtn) {
       adminBtn.addEventListener('click', () => {
@@ -61,13 +60,13 @@ export class AdminPanel {
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </div>
-          <h3 class="pin-title">Admin Hozzáférés</h3>
-          <p class="pin-subtitle">Adja meg a 4 jegyű adminisztrátori PIN kódot (Alapértelmezett: 1234)</p>
+          <h3 class="pin-title">Adminisztrátori Belépés</h3>
+          <p class="pin-subtitle">Adja meg a 4 jegyű PIN kódot (Alapértelmezett: 1234)</p>
           <form id="pin-form">
             <div class="pin-input-group">
               <input type="password" id="pin-code-input" class="pin-input" maxlength="4" placeholder="••••" required autofocus />
             </div>
-            <button type="submit" class="pin-submit-btn">Belépés az Admin felületre</button>
+            <button type="submit" class="pin-submit-btn">Belépés</button>
           </form>
         </div>
       `;
@@ -87,7 +86,7 @@ export class AdminPanel {
           this.isAuthorized = true;
           this.closePinModal();
           this.openAdminModal();
-          showToast('Sikeres adminisztrátori azonosítás!', 'success');
+          showToast('Sikeres azonosítás!', 'success');
         } else {
           showToast('Helytelen PIN kód!', 'error');
           input.value = '';
@@ -128,8 +127,8 @@ export class AdminPanel {
         <div class="admin-container">
           <div class="admin-header">
             <div class="admin-title-wrap">
-              <span class="admin-badge">Adminisztráció</span>
-              <h2 class="admin-title">Készletkezelő & Feltöltés</h2>
+              <span class="admin-badge">Adminisztáció</span>
+              <h2 class="admin-title">Készletkezelő Felület</h2>
             </div>
             <button class="modal-close-btn" id="admin-close-btn" style="position:static;" aria-label="Bezárás">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -142,7 +141,6 @@ export class AdminPanel {
           <div class="admin-tabs">
             <button class="admin-tab-btn active" data-tab="tab-add-car">Új autó feltöltése</button>
             <button class="admin-tab-btn" data-tab="tab-manage-cars">Készlet törlése / Kezelése</button>
-            <button class="admin-tab-btn" data-tab="tab-supabase-config">Supabase Adatbázis</button>
           </div>
 
           <div class="admin-body">
@@ -211,7 +209,7 @@ export class AdminPanel {
                     </div>
                     
                     <div style="margin-top:12px;">
-                      <input type="text" id="add-image-url" class="form-input" placeholder="Kép URL hozzáadása kézzel (opcionális)..." />
+                      <input type="text" id="add-image-url" class="form-input" placeholder="Kép URL hozzáadása kézzel (Enter)..." />
                     </div>
 
                     <div id="image-previews-container" class="image-preview-grid"></div>
@@ -235,27 +233,6 @@ export class AdminPanel {
                 <!-- Cars list table injected dynamically -->
               </div>
             </div>
-
-            <!-- TAB 3: SUPABASE CONFIG -->
-            <div id="tab-supabase-config" class="admin-tab-content" style="display:none;">
-              <div style="max-width:560px;">
-                <h3 style="font-family:var(--font-heading); font-size:1.15rem; margin-bottom:8px;">Supabase Cloud Integráció</h3>
-                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px;">
-                  Adja meg a Supabase projektjének nyilvános URL-jét és Anon Key kulcsát a felhős adatszinkronizációhoz.
-                </p>
-                <form id="supabase-config-form">
-                  <div style="margin-bottom:16px;">
-                    <label class="form-label" for="sb-url">Supabase Project URL</label>
-                    <input type="url" id="sb-url" class="form-input" placeholder="https://xyz.supabase.co" />
-                  </div>
-                  <div style="margin-bottom:20px;">
-                    <label class="form-label" for="sb-key">Supabase Anon Key</label>
-                    <input type="password" id="sb-key" class="form-input" placeholder="eyJh..." />
-                  </div>
-                  <button type="submit" class="pin-submit-btn">Supabase Kapcsolódás Mentése</button>
-                </form>
-              </div>
-            </div>
           </div>
         </div>
       `;
@@ -265,7 +242,6 @@ export class AdminPanel {
   }
 
   bindAdminModalEvents(overlay) {
-    // Close button
     const closeBtn = overlay.querySelector('#admin-close-btn');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this.closeAdminModal());
@@ -275,7 +251,6 @@ export class AdminPanel {
       if (e.target === overlay) this.closeAdminModal();
     });
 
-    // Tab switcher
     const tabBtns = overlay.querySelectorAll('.admin-tab-btn');
     tabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -293,7 +268,7 @@ export class AdminPanel {
       });
     });
 
-    // Image Dropzone logic
+    // Dropzone
     const dropzone = overlay.querySelector('#image-dropzone');
     const fileInput = overlay.querySelector('#dropzone-file-input');
     const urlInput = overlay.querySelector('#add-image-url');
@@ -326,7 +301,7 @@ export class AdminPanel {
       }
     });
 
-    // Form submit for adding a new car
+    // Form submit
     const form = overlay.querySelector('#add-car-form');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -350,26 +325,10 @@ export class AdminPanel {
       await dbService.addCar(newCar);
       showToast(`${newCar.make} ${newCar.model} sikeresen hozzáadva!`, 'success');
 
-      // Reset form
       form.reset();
       this.uploadedImages = [];
       this.renderImagePreviews();
       
-      this.onCarsUpdated();
-    });
-
-    // Supabase config form
-    const sbForm = overlay.querySelector('#supabase-config-form');
-    const existingConfig = dbService.getSupabaseConfig();
-    if (existingConfig.url) overlay.querySelector('#sb-url').value = existingConfig.url;
-    if (existingConfig.key) overlay.querySelector('#sb-key').value = existingConfig.key;
-
-    sbForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const url = overlay.querySelector('#sb-url').value.trim();
-      const key = overlay.querySelector('#sb-key').value.trim();
-      dbService.saveSupabaseConfig(url, key);
-      showToast('Supabase beállítások elmentve!', 'success');
       this.onCarsUpdated();
     });
   }
@@ -446,7 +405,6 @@ export class AdminPanel {
       </table>
     `;
 
-    // Bind 1-click Delete Buttons
     container.querySelectorAll('.btn-delete-car').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const id = e.currentTarget.dataset.deleteId;
