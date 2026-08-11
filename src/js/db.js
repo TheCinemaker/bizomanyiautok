@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { INITIAL_CARS } from '../data/initialCars.js';
 
-const STORAGE_KEY = 'apex_motors_cars';
 const SUPABASE_CONFIG_KEY = 'apex_motors_supabase_config';
 
 const DEFAULT_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qceznytdsqdcodgrgoxd.supabase.co';
@@ -11,7 +9,6 @@ class DataService {
   constructor() {
     this.supabase = null;
     this.initSupabase();
-    this.initLocalStorage();
   }
 
   getSupabaseConfig() {
@@ -33,7 +30,7 @@ class DataService {
       try {
         this.supabase = createClient(config.url, config.key);
       } catch (err) {
-        console.warn('Supabase client failed to initialize, using local mode', err);
+        console.warn('Supabase client failed to initialize:', err);
         this.supabase = null;
       }
     }
@@ -44,103 +41,78 @@ class DataService {
     this.initSupabase();
   }
 
-  initLocalStorage() {
-    const existing = localStorage.getItem(STORAGE_KEY);
-    if (!existing) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CARS));
-    }
-  }
-
   async getCars() {
-    if (this.supabase) {
-      try {
-        const { data, error } = await this.supabase
-          .from('cars')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (!error && data && data.length > 0) {
-          return data;
-        }
-      } catch (err) {
-        console.warn('Supabase fetch failed, fallback to local storage:', err);
-      }
+    if (!this.supabase) {
+      console.warn('Supabase is not configured.');
+      return [];
     }
 
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : INITIAL_CARS;
-    } catch (e) {
-      return INITIAL_CARS;
+      const { data, error } = await this.supabase
+        .from('cars')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Hiba az autók lekérésekor a Supabase-ből:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('Supabase hálózati / lekérdezési hiba:', err);
+      return [];
     }
   }
 
   async addCar(carData) {
+    if (!this.supabase) {
+      throw new Error('Supabase adatbázis kapcsolat nem elérhető!');
+    }
+
     const newCar = {
       ...carData,
       id: carData.id || `car-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       created_at: new Date().toISOString()
     };
 
-    if (this.supabase) {
-      try {
-        const { data, error } = await this.supabase
-          .from('cars')
-          .insert([newCar])
-          .select();
+    const { data, error } = await this.supabase
+      .from('cars')
+      .insert([newCar])
+      .select();
 
-        if (error) throw error;
-        if (data && data[0]) {
-          this.addLocalCar(data[0]);
-          return data[0];
-        }
-      } catch (err) {
-        console.warn('Supabase insert error, saving locally:', err);
-      }
+    if (error) {
+      console.error('Hiba az autó mentésekor a Supabase-ben:', error);
+      throw error;
     }
 
-    return this.addLocalCar(newCar);
-  }
-
-  addLocalCar(car) {
-    const cars = this.getLocalCars();
-    const updated = [car, ...cars];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    return car;
+    return data ? data[0] : newCar;
   }
 
   async deleteCar(id) {
-    if (this.supabase) {
-      try {
-        const { error } = await this.supabase
-          .from('cars')
-          .delete()
-          .eq('id', id);
-
-        if (error) console.warn('Supabase delete error:', error);
-      } catch (err) {
-        console.warn('Supabase connection error on delete:', err);
-      }
+    if (!this.supabase) {
+      console.error('Supabase kapcsolat hiányzik');
+      return false;
     }
 
-    const cars = this.getLocalCars();
-    const filtered = cars.filter(c => c.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
-    return true;
-  }
-
-  getLocalCars() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : INITIAL_CARS;
-    } catch (e) {
-      return INITIAL_CARS;
-    }
-  }
+      const { error } = await this.supabase
+        .from('cars')
+        .delete()
+        .eq('id', id);
 
-  resetToDefault() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CARS));
+      if (error) {
+        console.error('Hiba a Supabase törlésnél:', error);
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Supabase kapcsolódási hiba törléskor:', err);
+      return false;
+    }
   }
 }
 
 export const dbService = new DataService();
+

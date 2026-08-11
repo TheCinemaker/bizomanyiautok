@@ -63,6 +63,22 @@ body {
   transform: scale(0.98);
 }
 
+.brand-logo.holding-admin {
+  animation: logoPulse 1s infinite alternate ease-in-out;
+}
+
+@keyframes logoPulse {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.04);
+    opacity: 1;
+    filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.6));
+  }
+}
+
 .logo-badge {
   width: 44px;
   height: 44px;
@@ -281,9 +297,67 @@ body {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+.footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-copy {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: var(--accent-gold);
+  text-decoration: underline;
+}
+
+.footer-separator {
+  color: var(--border-light);
+}
+
+.footer-dev {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dev-link {
+  color: var(--accent-dark);
+  font-weight: 700;
+  text-decoration: none;
+  padding: 4px 10px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  transition: all var(--transition-fast);
+}
+
+.dev-link:hover {
+  color: var(--accent-gold);
+  background: var(--bg-dark-accent);
+  border-color: var(--bg-dark-accent);
 }
 
 /* Toast Notifications */

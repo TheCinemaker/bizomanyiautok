@@ -17,18 +17,27 @@ export class AdminPanel {
     const logoEl = document.getElementById('brand-logo-trigger');
     if (!logoEl) return;
 
-    let pressTimer;
+    let pressTimer = null;
 
-    const startPress = () => {
+    const startPress = (e) => {
+      logoEl.classList.add('holding-admin');
+
       pressTimer = setTimeout(() => {
-        showToast('Admin belépés...', 'info');
+        logoEl.classList.remove('holding-admin');
+        showToast('Admin azonosítás...', 'info');
         this.openPinModal();
-      }, 1200);
+      }, 5000);
     };
 
     const cancelPress = () => {
-      if (pressTimer) clearTimeout(pressTimer);
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+      logoEl.classList.remove('holding-admin');
     };
+
+    logoEl.addEventListener('click', (e) => e.preventDefault());
 
     logoEl.addEventListener('mousedown', startPress);
     logoEl.addEventListener('mouseup', cancelPress);
@@ -37,13 +46,6 @@ export class AdminPanel {
     logoEl.addEventListener('touchstart', startPress, { passive: true });
     logoEl.addEventListener('touchend', cancelPress);
     logoEl.addEventListener('touchcancel', cancelPress);
-
-    const adminBtn = document.getElementById('btn-admin-header');
-    if (adminBtn) {
-      adminBtn.addEventListener('click', () => {
-        this.openPinModal();
-      });
-    }
   }
 
   createPinModal() {
