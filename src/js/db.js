@@ -63,7 +63,7 @@ class DataService {
         throw new Error('Hibás e-mail cím vagy jelszó.');
       }
       if (/email not confirmed/i.test(error.message)) {
-        throw new Error('A fiók még nincs megerősítve.');
+        throw new Error('A fiók még nincs megerősítve (Email Not Confirmed)! Nyisd meg a Supabase Dashboard > Authentication > Users menüt, kattints a mozso@mozso.hu fiókra és válaszd a "Confirm Email" opciót.');
       }
       throw new Error(error.message);
     }

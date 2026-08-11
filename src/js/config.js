@@ -15,10 +15,8 @@ export const ADMIN_EMAILS = [
 
 export function isAllowedAdminEmail(email) {
   if (!email) return false;
-  // Ha nincs beállítva env változó, ne akadályozzuk a belépést:
-  // ilyenkor úgyis az adatbázis dönt.
-  if (ADMIN_EMAILS.length === 0) return true;
-  return ADMIN_EMAILS.includes(email.trim().toLowerCase());
+  // A jogosultságokat a Supabase Postgres RLS (admin_users tábla) kezeli.
+  return true;
 }
 
 /** Kereskedés nyilvános elérhetőségei. */
