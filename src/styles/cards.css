@@ -18,25 +18,28 @@
   border-color: var(--border-hover);
 }
 
-/* Image Container */
+/* Image Container with Dark Fit */
 .car-card-media {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  background: var(--bg-subtle);
+  background: #0F172A;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .car-card-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
+  object-fit: contain; /* Full car photo fits inside without cropping */
+  background: #0F172A;
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .car-card:hover .car-card-image {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
 /* Tag Badges on Media */
@@ -44,7 +47,7 @@
   position: absolute;
   top: 14px;
   right: 14px;
-  background: rgba(15, 23, 42, 0.82);
+  background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #FFFFFF;
@@ -54,14 +57,15 @@
   text-transform: uppercase;
   padding: 4px 10px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 5;
 }
 
 .car-card-year {
   position: absolute;
   top: 14px;
   left: 14px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: var(--text-primary);
@@ -70,6 +74,7 @@
   padding: 4px 10px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-light);
+  z-index: 5;
 }
 
 /* Card Body */

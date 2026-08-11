@@ -127,7 +127,7 @@ export class AdminPanel {
         <div class="admin-container">
           <div class="admin-header">
             <div class="admin-title-wrap">
-              <span class="admin-badge">Adminisztáció</span>
+              <span class="admin-badge">Adminisztráció</span>
               <h2 class="admin-title">Készletkezelő Felület</h2>
             </div>
             <button class="modal-close-btn" id="admin-close-btn" style="position:static;" aria-label="Bezárás">
@@ -196,16 +196,16 @@ export class AdminPanel {
                   </div>
 
                   <div class="form-group-full">
-                    <label class="form-label">Autó Fotók (Tallózás / Húzás vagy URL)</label>
+                    <label class="form-label">Autó Fotók (Több fotó feltöltése vagy Kamera használata)</label>
+                    
                     <div class="dropzone" id="image-dropzone">
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
                       </svg>
-                      <p style="font-size:0.9rem; font-weight:600; color:var(--text-primary);">Kattintson ide fotók feltöltéséhez</p>
-                      <p style="font-size:0.75rem; color:var(--text-muted);">PNG, JPG, WEBP képek támogatottak</p>
-                      <input type="file" id="dropzone-file-input" multiple accept="image/*" style="display:none;" />
+                      <p style="font-size:0.95rem; font-weight:700; color:var(--text-primary);">Fotózás kamerával vagy Képek tallózása</p>
+                      <p style="font-size:0.75rem; color:var(--text-muted);">Több képet is kiválaszthat egyszerre a galériából vagy készíthet fotót telefonjával</p>
+                      <input type="file" id="dropzone-file-input" multiple accept="image/*" capture="environment" style="display:none;" />
                     </div>
                     
                     <div style="margin-top:12px;">
@@ -268,7 +268,7 @@ export class AdminPanel {
       });
     });
 
-    // Dropzone
+    // Dropzone logic
     const dropzone = overlay.querySelector('#image-dropzone');
     const fileInput = overlay.querySelector('#dropzone-file-input');
     const urlInput = overlay.querySelector('#add-image-url');
@@ -323,7 +323,7 @@ export class AdminPanel {
       };
 
       await dbService.addCar(newCar);
-      showToast(`${newCar.make} ${newCar.model} sikeresen hozzáadva!`, 'success');
+      showToast(`${newCar.make} ${newCar.model} (${newCar.images.length} db fotó) hozzáadva!`, 'success');
 
       form.reset();
       this.uploadedImages = [];
@@ -385,7 +385,7 @@ export class AdminPanel {
                 </td>
                 <td>
                   <strong>${escapeHtml(car.make)} ${escapeHtml(car.model)}</strong>
-                  <div style="font-size:0.75rem; color:var(--text-muted);">${car.fuel || ''} • ${car.power || 0} LE</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">${car.fuel || ''} • ${car.power || 0} LE (${(car.images || []).length} fotó)</div>
                 </td>
                 <td>${car.year || '-'}</td>
                 <td><strong>${formatCurrency(car.price)}</strong></td>

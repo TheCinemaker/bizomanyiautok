@@ -3,6 +3,11 @@ import { formatCurrency, formatMileage, escapeHtml, showToast } from '../utils/h
 export class CarModal {
   constructor() {
     this.overlay = null;
+    this.currentImages = [];
+    this.currentIndex = 0;
+    this.touchStartX = 0;
+    this.touchEndX = 0;
+    
     this.createModalMarkup();
     this.bindEvents();
   }
@@ -45,28 +50,51 @@ export class CarModal {
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.overlay.classList.contains('active')) {
-        this.close();
-      }
+      if (!this.overlay.classList.contains('active')) return;
+      if (e.key === 'Escape') this.close();
+      if (e.key === 'ArrowLeft') this.prevImage();
+      if (e.key === 'ArrowRight') this.nextImage();
     });
   }
 
   open(car) {
-    const target = this.overlay.querySelector('#modal-content-target');
-    const images = (car.images && car.images.length > 0) 
+    this.currentImages = (car.images && car.images.length > 0) 
       ? car.images 
       : ['https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=85'];
+    this.currentIndex = 0;
+
+    const target = this.overlay.querySelector('#modal-content-target');
 
     target.innerHTML = `
       <div class="modal-gallery">
-        <div class="gallery-main">
-          <img id="gallery-active-img" src="${escapeHtml(images[0])}" alt="${escapeHtml(car.make)} ${escapeHtml(car.model)}" class="gallery-main-img" />
+        <div class="gallery-main" id="gallery-main-box">
+          <!-- Counter badge -->
+          <span class="gallery-counter" id="gallery-counter-badge">1 / ${this.currentImages.length}</span>
+          
+          <!-- Main Image -->
+          <img id="gallery-active-img" src="${escapeHtml(this.currentImages[0])}" alt="${escapeHtml(car.make)} ${escapeHtml(car.model)}" class="gallery-main-img" />
+          
+          <!-- Prev/Next Navigation Circle Buttons (Always Visible) -->
+          ${this.currentImages.length > 1 ? `
+            <button class="gallery-nav-btn gallery-nav-prev" id="gallery-prev-btn" aria-label="Előző fotó">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button class="gallery-nav-btn gallery-nav-next" id="gallery-next-btn" aria-label="Következő fotó">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          ` : ''}
         </div>
-        ${images.length > 1 ? `
-          <div class="gallery-thumbnails">
-            ${images.map((img, idx) => `
-              <div class="gallery-thumb ${idx === 0 ? 'active' : ''}" data-img-url="${escapeHtml(img)}">
-                <img src="${escapeHtml(img)}" alt="Kép ${idx + 1}" />
+
+        <!-- Thumbnails row -->
+        ${this.currentImages.length > 1 ? `
+          <div class="gallery-thumbnails" id="gallery-thumbs-row">
+            ${this.currentImages.map((img, idx) => `
+              <div class="gallery-thumb ${idx === 0 ? 'active' : ''}" data-idx="${idx}">
+                <img src="${escapeHtml(img)}" alt="Bélyegkép ${idx + 1}" />
               </div>
             `).join('')}
           </div>
@@ -129,17 +157,34 @@ export class CarModal {
       </div>
     `;
 
-    // Bind thumbnail click events
-    const thumbs = target.querySelectorAll('.gallery-thumb');
-    const activeImg = target.querySelector('#gallery-active-img');
+    // Bind gallery controls
+    const prevBtn = target.querySelector('#gallery-prev-btn');
+    const nextBtn = target.querySelector('#gallery-next-btn');
 
+    if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); this.prevImage(); });
+    if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); this.nextImage(); });
+
+    // Thumbnails click
+    const thumbs = target.querySelectorAll('.gallery-thumb');
     thumbs.forEach(thumb => {
       thumb.addEventListener('click', () => {
-        thumbs.forEach(t => t.classList.remove('active'));
-        thumb.classList.add('active');
-        activeImg.src = thumb.dataset.imgUrl;
+        const idx = Number(thumb.dataset.idx);
+        this.setImageIndex(idx);
       });
     });
+
+    // Touch swipe support for mobile devices
+    const mainBox = target.querySelector('#gallery-main-box');
+    if (mainBox) {
+      mainBox.addEventListener('touchstart', (e) => {
+        this.touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      mainBox.addEventListener('touchend', (e) => {
+        this.touchEndX = e.changedTouches[0].screenX;
+        this.handleSwipe();
+      }, { passive: true });
+    }
 
     // Inquiry CTA handler
     const ctaBtn = target.querySelector('#btn-inquire-car');
@@ -151,6 +196,49 @@ export class CarModal {
 
     this.overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
+  }
+
+  handleSwipe() {
+    const diffX = this.touchEndX - this.touchStartX;
+    if (Math.abs(diffX) > 40) {
+      if (diffX < 0) {
+        this.nextImage();
+      } else {
+        this.prevImage();
+      }
+    }
+  }
+
+  setImageIndex(index) {
+    if (this.currentImages.length === 0) return;
+    if (index < 0) index = this.currentImages.length - 1;
+    if (index >= this.currentImages.length) index = 0;
+
+    this.currentIndex = index;
+    const activeImg = this.overlay.querySelector('#gallery-active-img');
+    const badge = this.overlay.querySelector('#gallery-counter-badge');
+    const thumbs = this.overlay.querySelectorAll('.gallery-thumb');
+
+    if (activeImg) {
+      activeImg.src = this.currentImages[this.currentIndex];
+    }
+
+    if (badge) {
+      badge.textContent = `${this.currentIndex + 1} / ${this.currentImages.length}`;
+    }
+
+    thumbs.forEach(t => {
+      const idx = Number(t.dataset.idx);
+      t.classList.toggle('active', idx === this.currentIndex);
+    });
+  }
+
+  prevImage() {
+    this.setImageIndex(this.currentIndex - 1);
+  }
+
+  nextImage() {
+    this.setImageIndex(this.currentIndex + 1);
   }
 
   close() {
