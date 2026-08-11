@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Általános Szerződési Feltételek (ÁSZF) | MOZSÓ Bizományos Autók</title>
+  <link rel="stylesheet" href="./src/styles/variables.css" />
+  <link rel="stylesheet" href="./src/styles/main.css" />
+  <style>
+    .legal-page {
+      max-width: 860px;
+      margin: 40px auto;
+      padding: 40px;
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-xl);
+    }
+    .legal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--border-light);
+      padding-bottom: 20px;
+      margin-bottom: 32px;
+    }
+    .legal-title {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .btn-close-window {
+      background: var(--bg-dark-accent);
+      color: var(--text-inverse);
+      border: none;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background var(--transition-fast);
+    }
+    .btn-close-window:hover {
+      background: var(--accent-gold);
+      color: var(--accent-dark);
+    }
+    .legal-content h3 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      margin: 24px 0 12px 0;
+      color: var(--text-primary);
+    }
+    .legal-content p, .legal-content li {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .legal-content ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="legal-page">
+    <div class="legal-header">
+      <div>
+        <span class="brand-sub" style="color:var(--accent-gold); font-weight:700;">MOZSÓ BIZOMÁNYOS AUTÓK</span>
+        <h1 class="legal-title">Általános Szerződési Feltételek (ÁSZF)</h1>
+      </div>
+      <button onclick="window.close()" class="btn-close-window">
+        Bezárás &times;
+      </button>
+    </div>
+
+    <div class="legal-content">
+      <p><strong>Hatályos:</strong> 2026. január 1-től visszavonásig.</p>
+
+      <h3>1. Általános Rendelkezések</h3>
+      <p>Jelen Általános Szerződési Feltételek (a továbbiakban: ÁSZF) a MOZSÓ Bizományos Autók (a továbbiakban: Szolgáltató) által üzemeltetett weboldal használatának feltételeit tartalmazzák.</p>
+
+      <h3>2. A Szolgáltatás Jellege</h3>
+      <p>A weboldalon megjelenített gépjárművek tájékoztató jellegű katalógust képeznek. A feltüntetett árak, adatok és felszereltségek nem minősülnek közvetlen ajánlattételnek (Ptk. 6:64. §).</p>
+
+      <h3>3. Bizományos Értékesítés és Vásárlás</h3>
+      <p>A gépjárművek megtekintése, próbavezetése és az adásvételi szerződés megkötése személyesen a Szolgáltató telephelyén történik. A weboldalon keresztül történő érdeklődés nem jelent automatikus foglalást.</p>
+
+      <h3>4. Felelősség Korlátozása</h3>
+      <p>A Szolgáltató minden tőle telhetőt megtesz az adatok pontosságáért, azonban a hibás adatmegadásból vagy technikai fennakadásokból eredő károkért felelősséget nem vállal.</p>
+
+      <h3>5. Szerzői Jogok és Fejlesztés</h3>
+      <p>A weboldal arculata, szoftveres megoldásai és grafikai elemei a <strong>SA Software & Network Solutions</strong> szellemi tulajdonát képezik.</p>
+    </div>
+  </div>
+</body>
+</html>

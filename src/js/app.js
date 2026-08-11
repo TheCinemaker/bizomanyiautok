@@ -25,11 +25,19 @@ class App {
   }
 
   bindGlobalEvents() {
-    // Mobile hamburger menu filter toggler
-    const mobileFilterBtn = document.getElementById('btn-mobile-filter');
-    if (mobileFilterBtn) {
-      mobileFilterBtn.addEventListener('click', () => {
-        this.filterDrawer.openMobileDrawer();
+    // Floating back to top button
+    const scrollTopBtn = document.getElementById('btn-scroll-top');
+    if (scrollTopBtn) {
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 250) {
+          scrollTopBtn.classList.add('visible');
+        } else {
+          scrollTopBtn.classList.remove('visible');
+        }
+      });
+
+      scrollTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     }
 

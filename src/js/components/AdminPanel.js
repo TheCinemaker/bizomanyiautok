@@ -367,44 +367,34 @@ export class AdminPanel {
     }
 
     container.innerHTML = `
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Fotó</th>
-            <th>Jármű</th>
-            <th>Évjárat</th>
-            <th>Ár</th>
-            <th>Törlés (1-kattintás)</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${cars.map(car => {
-            const thumb = (car.images && car.images[0]) ? car.images[0] : '';
-            return `
-              <tr>
-                <td>
-                  ${thumb ? `<img src="${escapeHtml(thumb)}" class="admin-table-thumb" alt="${escapeHtml(car.model)}" />` : '-'}
-                </td>
-                <td>
-                  <strong>${escapeHtml(car.make)} ${escapeHtml(car.model)}</strong>
-                  <div style="font-size:0.75rem; color:var(--text-muted);">${car.fuel || ''} • ${car.power || 0} LE (${(car.images || []).length} fotó)</div>
-                </td>
-                <td>${car.year || '-'}</td>
-                <td><strong>${formatCurrency(car.price)}</strong></td>
-                <td>
-                  <button type="button" class="btn-delete-car" data-delete-id="${car.id}">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                      <polyline points="3 6 5 6 21 6"></polyline>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                    Törlés
-                  </button>
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
+      <div class="admin-car-list">
+        ${cars.map(car => {
+          const thumb = (car.images && car.images[0]) ? car.images[0] : '';
+          return `
+            <div class="admin-car-card">
+              <div class="admin-car-thumb-wrap">
+                ${thumb ? `<img src="${escapeHtml(thumb)}" class="admin-car-thumb" alt="${escapeHtml(car.model)}" />` : '<div class="admin-car-nothumb">Nincs fotó</div>'}
+              </div>
+              <div class="admin-car-info">
+                <div class="admin-car-title">${escapeHtml(car.make)} ${escapeHtml(car.model)}</div>
+                <div class="admin-car-meta">
+                  <span>${car.year || '-'}</span> • <span>${car.fuel || ''}</span> • <span>${car.power || 0} LE</span> (${(car.images || []).length} fotó)
+                </div>
+                <div class="admin-car-price">${formatCurrency(car.price)}</div>
+              </div>
+              <div class="admin-car-actions">
+                <button type="button" class="btn-delete-car" data-delete-id="${car.id}">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Törlés</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
     `;
 
     container.querySelectorAll('.btn-delete-car').forEach(btn => {
