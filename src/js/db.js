@@ -186,7 +186,7 @@ class DataService {
       if (!user) {
         throw new Error('A bejelentkezési munkamenet lejárt. Kérjük, jelentkezz be újra!');
       }
-      throw new Error('A módosítás nem ment végbe az adatbázisban. Kérjük, ellenőrizd az internetkapcsolatot és próbáld újra!');
+      throw new Error(`A módosítás nem ment végbe. A (${user.email}) fiók nincs felvéve a Supabase 'admin_users' táblájába, vagy az autó nem létezik!`);
     }
     return data[0];
   }
@@ -208,7 +208,7 @@ class DataService {
       if (!user) {
         throw new Error('A törlés nem ment végbe. A munkamenet lejárt - jelentkezz be újra!');
       }
-      throw new Error('A törlés nem ment végbe. Kérjük, ellenőrizd a hálózati kapcsolatot és próbáld újra!');
+      throw new Error(`A törlés nem ment végbe. A (${user.email}) fiók nincs felvéve a Supabase 'admin_users' táblájába!`);
     }
     return true;
   }

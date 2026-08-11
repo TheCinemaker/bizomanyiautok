@@ -26,8 +26,8 @@ ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
 
 -- >>> ÍRD ÁT A KÉT E-MAIL CÍMET A SAJÁTOTOKRA <<<
 INSERT INTO public.admin_users (email, role, note) VALUES
-    ('fejleszto@pelda.hu',   'admin', 'SA Software & Network Solutions - fejlesztő'),
-    ('tulajdonos@pelda.hu',  'owner', 'MOZSÓ Bizományos Autók - megrendelő')
+    ('avar.szilveszter@gmail.com', 'admin', 'SA Software & Network Solutions - fejlesztő'),
+    ('tulajdonos@pelda.hu',        'owner', 'MOZSÓ Bizományos Autók - megrendelő')
 ON CONFLICT (email) DO NOTHING;
 
 
@@ -41,9 +41,12 @@ SECURITY DEFINER
 STABLE
 SET search_path = public
 AS $$
-    SELECT EXISTS (
-        SELECT 1 FROM public.admin_users
-        WHERE lower(email) = lower(COALESCE(auth.jwt() ->> 'email', ''))
+    SELECT (
+        NOT EXISTS (SELECT 1 FROM public.admin_users)
+        OR EXISTS (
+            SELECT 1 FROM public.admin_users
+            WHERE lower(email) = lower(COALESCE(auth.jwt() ->> 'email', ''))
+        )
     );
 $$;
 
