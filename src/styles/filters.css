@@ -1,4 +1,26 @@
-/* Mobile Filter Collapsible Bar (Hidden on desktop) */
+/* Szűrők - asztali oldalsáv és mobil lenyíló */
+
+/* ------------------------------------------------------- Asztali oldalsáv */
+
+.desktop-filter-wrap {
+  position: sticky;
+  top: 100px;            /* 76px fejléc + levegő */
+  align-self: start;
+}
+
+/* A szűrő doboz alapstílusa.
+   Korábban ez a szabály hiányzott: csak a mobil felülírása létezett, ezért
+   asztali nézetben a szűrő keret, háttér és belső margó nélkül lógott a lapon. */
+.filter-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 22px;
+  max-height: calc(100vh - 130px);
+  overflow-y: auto;
+}
+
 .mobile-filter-container {
   display: none;
   margin-bottom: 24px;
@@ -6,7 +28,7 @@
 
 @media (max-width: 1024px) {
   .desktop-filter-wrap {
-    display: none !important;
+    display: none;
   }
 
   .mobile-filter-container {
@@ -14,13 +36,14 @@
   }
 }
 
+/* --------------------------------------------------------- Mobil lenyíló */
+
 .mobile-filter-wrapper {
   background: var(--bg-surface);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-  transition: all var(--transition-normal);
 }
 
 .mobile-filter-header-bar {
@@ -46,13 +69,13 @@
 
 .mobile-search-input {
   width: 100%;
-  padding: 10px 32px 10px 36px;
+  padding: 11px 14px 11px 38px;
   background: var(--bg-subtle);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-family: var(--font-family);
-  font-size: 0.88rem;
+  font-size: 16px;      /* 16px alatt az iOS ráközelít a mezőre */
   transition: all var(--transition-fast);
 }
 
@@ -60,29 +83,19 @@
   outline: none;
   background: var(--bg-surface);
   border-color: var(--accent-dark);
-}
-
-.clear-search-btn {
-  position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.07);
 }
 
 .btn-toggle-accordion {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 11px 14px;
   background: var(--bg-subtle);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   color: var(--text-primary);
+  font-family: inherit;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -99,12 +112,12 @@
 
 .filter-count-badge {
   background: var(--accent-gold);
-  color: var(--accent-dark);
-  font-size: 0.72rem;
+  color: #FFFFFF;
+  font-size: 0.7rem;
   font-weight: 800;
   border-radius: var(--radius-full);
   padding: 2px 7px;
-  line-height: 1;
+  line-height: 1.4;
 }
 
 .chevron-icon {
@@ -115,58 +128,72 @@
   transform: rotate(180deg);
 }
 
+/* A grid-sor animálása kiváltja a fix max-height-et: nem lehet elvágni a
+   tartalmat akkor sem, ha később új szűrő kerül bele. */
 .mobile-accordion-body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--transition-smooth);
 }
 
 .mobile-accordion-body.expanded {
-  max-height: 800px;
+  grid-template-rows: 1fr;
 }
 
-.mobile-accordion-inner {
-  padding: 0 12px 16px 12px;
+.mobile-accordion-body > .mobile-accordion-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.mobile-accordion-body.expanded > .mobile-accordion-inner {
   border-top: 1px solid var(--border-light);
 }
 
 .mobile-accordion-inner .filter-panel {
   border: none;
   box-shadow: none;
-  padding: 12px 4px 0 4px;
-  position: static;
   background: transparent;
+  padding: 14px 14px 18px 14px;
+  max-height: none;
+  overflow: visible;
 }
 
+/* --------------------------------------------------------- Űrlapelemek */
 
 .filter-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   margin-bottom: 20px;
-  padding-bottom: 16px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border-light);
 }
 
+/* A 280px széles oldalsávban a cím és az "Alaphelyzet" gomb egy sorba kell
+   férjen, különben a fejléc kettétörik. */
 .filter-title {
   font-family: var(--font-heading);
-  font-size: 1.15rem;
+  font-size: 1.02rem;
   font-weight: 700;
   color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .btn-clear-filters {
   background: none;
   border: none;
   color: var(--text-muted);
+  font-family: inherit;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   padding: 4px 8px;
   border-radius: var(--radius-sm);
+  white-space: nowrap;
   transition: color var(--transition-fast);
 }
 
@@ -174,9 +201,8 @@
   color: var(--accent-danger);
 }
 
-/* Filter Groups */
 .filter-group {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .filter-group:last-child {
@@ -184,7 +210,7 @@
 }
 
 .filter-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -193,9 +219,32 @@
   display: block;
 }
 
-.filter-input {
+.filter-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.filter-label-row .filter-label {
+  margin-bottom: 0;
+}
+
+.filter-value-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--bg-subtle);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.filter-input,
+.filter-select {
   width: 100%;
-  padding: 10px 14px;
+  padding: 11px 14px;
   background: var(--bg-subtle);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
@@ -205,140 +254,57 @@
   transition: all var(--transition-fast);
 }
 
-.filter-input:focus {
+.filter-input:focus,
+.filter-select:focus {
   outline: none;
   background: var(--bg-surface);
   border-color: var(--accent-dark);
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.07);
 }
 
 .filter-select {
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-family: var(--font-family);
-  font-size: 0.9rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%40475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  -webkit-appearance: none;
+  padding-right: 40px;
+  /* A `#` jelet %23-ként kell kódolni. Korábban %40 (azaz "@") szerepelt itt,
+     ami érvénytelen szín - a nyíl emiatt egyáltalán nem rajzolódott ki, és mivel
+     az appearance:none a natívat is eltünteti, a legördülők jelöletlenek voltak. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
 }
 
-.filter-select:focus {
-  outline: none;
-  background-color: var(--bg-surface);
-  border-color: var(--accent-dark);
-}
-
-/* Price Range Inputs */
-.price-inputs {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.price-inputs input {
-  width: 50%;
-}
-
-.price-separator {
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-/* Chip Multi-select */
-.chip-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.chip-btn {
-  padding: 6px 12px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-full);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.chip-btn:hover {
-  background: var(--border-light);
-  color: var(--text-primary);
-}
-
-.chip-btn.active {
-  background: var(--accent-dark);
-  color: var(--text-inverse);
-  border-color: var(--accent-dark);
-}
-
-/* Mobile Filter Drawer Slide-Over */
-.drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 150;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(4px);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity var(--transition-normal);
-}
-
-.drawer-backdrop.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-.drawer-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
+/* Ársáv csúszka */
+.filter-range {
   width: 100%;
-  max-width: 360px;
-  z-index: 160;
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-xl);
-  padding: 24px;
-  overflow-y: auto;
-  transform: translateX(100%);
-  transition: transform var(--transition-smooth);
-  display: flex;
-  flex-direction: column;
-}
-
-.drawer-backdrop.active .drawer-panel {
-  transform: translateX(0);
-}
-
-.drawer-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.drawer-title {
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.drawer-close-btn {
-  background: none;
-  border: none;
-  color: var(--text-primary);
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-light);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  padding: 4px;
+  outline: none;
+}
+
+.filter-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-dark);
+  border: 3px solid #FFFFFF;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+}
+
+.filter-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-dark);
+  border: 3px solid #FFFFFF;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
 }

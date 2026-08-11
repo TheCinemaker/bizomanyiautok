@@ -1,9 +1,10 @@
-/* Detail Modal & Overlay */
+/* Részletek modal */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(15, 23, 42, 0.62);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
@@ -26,18 +27,16 @@
   background: var(--bg-surface);
   border-radius: var(--radius-xl);
   width: 100%;
-  max-width: 960px;
+  max-width: 980px;
   max-height: 90vh;
   overflow-y: auto;
   overflow-x: hidden;
-  touch-action: pan-y;
+  overscroll-behavior: contain;
   box-shadow: var(--shadow-xl);
   border: 1px solid var(--border-light);
   transform: translateY(20px) scale(0.98);
   transition: transform var(--transition-smooth);
   position: relative;
-  display: flex;
-  flex-direction: column;
 }
 
 .modal-overlay.active .modal-container {
@@ -46,13 +45,13 @@
 
 .modal-close-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 18px;
+  right: 18px;
   z-index: 30;
   width: 40px;
   height: 40px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(4px);
   border: 1px solid var(--border-light);
   color: var(--text-primary);
@@ -67,29 +66,32 @@
 .modal-close-btn:hover {
   background: var(--accent-dark);
   color: var(--text-inverse);
+  border-color: var(--accent-dark);
 }
 
-/* Modal Content Grid */
 .modal-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  grid-template-columns: 1.05fr 1fr;
   gap: 32px;
   padding: 32px;
-  overflow-x: hidden;
 }
 
-/* Gallery Component with Black Sashes and High-Visibility Arrow Buttons */
+/* ---------------------------------------------------------------- Galéria */
+
 .modal-gallery {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  min-width: 0;
 }
 
+/* A teljes, vágatlan fotó itt látszik. A keret világos semleges, nem fekete:
+   egy világos oldalon a fekete sáv idegen testként hat. */
 .gallery-main {
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  background: #000000; /* Black background for sashes */
+  background: var(--bg-photo);
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--border-light);
@@ -103,91 +105,77 @@
 .gallery-main-img {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* Complete photo fits inside without cropping, showing sashes if needed */
-  background: #000000;
-  transition: opacity var(--transition-fast);
+  object-fit: contain;
 }
 
-/* Photo Counter Badge */
 .gallery-counter {
   position: absolute;
-  top: 14px;
-  left: 14px;
+  top: 12px;
+  left: 12px;
   z-index: 15;
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 23, 42, 0.82);
   backdrop-filter: blur(8px);
   color: #FFFFFF;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  padding: 4px 10px;
+  padding: 4px 11px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.2);
   letter-spacing: 0.5px;
 }
 
-/* High-Visibility Circle Arrow Navigation Buttons */
 .gallery-nav-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 20;
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 23, 42, 0.86);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  border: 2px solid rgba(255, 255, 255, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.9);
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
-  transition: all var(--transition-fast);
-  outline: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: background var(--transition-fast), transform var(--transition-fast);
 }
 
 .gallery-nav-btn:hover {
   background: var(--accent-dark);
-  border-color: #FFFFFF;
   transform: translateY(-50%) scale(1.08);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }
 
 .gallery-nav-btn:active {
   transform: translateY(-50%) scale(0.95);
 }
 
-.gallery-nav-prev {
-  left: 12px;
-}
-
-.gallery-nav-next {
-  right: 12px;
-}
+.gallery-nav-prev { left: 12px; }
+.gallery-nav-next { right: 12px; }
 
 .gallery-thumbnails {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
+  scrollbar-width: thin;
 }
 
 .gallery-thumb {
-  width: 76px;
-  height: 56px;
+  width: 74px;
+  height: 54px;
+  padding: 0;
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: #000000;
+  background: var(--bg-photo);
   border: 2px solid transparent;
   cursor: pointer;
-  opacity: 0.55;
+  opacity: 0.6;
   transition: all var(--transition-fast);
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .gallery-thumb.active,
@@ -199,65 +187,68 @@
 .gallery-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  background: #000000;
+  object-fit: cover;
+  display: block;
 }
 
-/* Specs & Details Side */
+/* ---------------------------------------------------------------- Adatok */
+
 .modal-details {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .modal-header-info {
   margin-bottom: 20px;
   border-bottom: 1px solid var(--border-light);
   padding-bottom: 16px;
+  padding-right: 48px;   /* hely a bezáró gombnak */
 }
 
 .modal-car-make {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: var(--accent-gold);
+  color: var(--accent-gold-text);
 }
 
 .modal-car-title {
   font-family: var(--font-heading);
-  font-size: 1.75rem;
+  font-size: 1.7rem;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1.2;
-  margin: 4px 0 8px 0;
+  margin: 4px 0 10px 0;
 }
 
 .modal-price-tag {
   font-family: var(--font-heading);
-  font-size: 1.75rem;
+  font-size: 1.7rem;
   font-weight: 800;
   color: var(--text-primary);
 }
 
-/* Specs Grid */
 .specs-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
 .spec-box {
   background: var(--bg-subtle);
-  padding: 12px 14px;
+  padding: 11px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .spec-label {
-  font-size: 0.725rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-muted);
@@ -266,9 +257,10 @@
 }
 
 .spec-value {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--text-primary);
+  overflow-wrap: break-word;
 }
 
 .modal-description-title {
@@ -282,45 +274,228 @@
 .modal-description-text {
   font-size: 0.9rem;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.7;
   margin-bottom: 24px;
+  white-space: pre-line;
+}
+
+/* ----------------------------------------------------------- Műveletek */
+
+.modal-actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .modal-cta-btn {
-  margin-top: auto;
-  width: 100%;
-  padding: 14px 24px;
-  background: var(--accent-dark);
-  color: var(--text-inverse);
-  border: none;
+  flex: 1 1 180px;
+  padding: 14px 20px;
   border-radius: var(--radius-md);
-  font-size: 1rem;
+  font-family: inherit;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background var(--transition-fast);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
 }
 
-.modal-cta-btn:hover {
+.modal-cta-primary {
+  background: var(--accent-dark);
+  color: var(--text-inverse);
+  border-color: var(--accent-dark);
+}
+
+.modal-cta-primary:hover {
   background: var(--accent-dark-hover);
 }
 
-@media (max-width: 840px) {
+.modal-cta-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-cta-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.modal-cta-secondary:hover,
+.modal-cta-secondary.active {
+  background: var(--bg-subtle);
+  border-color: var(--accent-dark);
+}
+
+.modal-share-btn {
+  flex: 0 0 auto;
+  padding: 14px 16px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all var(--transition-fast);
+}
+
+.modal-share-btn:hover {
+  background: var(--bg-surface);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+/* ------------------------------------------------------ Érdeklődés űrlap */
+
+.inquiry-form {
+  margin-top: 16px;
+  padding: 18px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inquiry-form[hidden] {
+  display: none;
+}
+
+.inquiry-form-intro {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.inquiry-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.inquiry-form .form-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.inquiry-form .form-input,
+.inquiry-form .form-textarea {
+  width: 100%;
+  padding: 11px 13px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 16px;      /* iOS zoom elkerülése */
+  transition: all var(--transition-fast);
+}
+
+.inquiry-form .form-textarea {
+  resize: vertical;
+  min-height: 62px;
+}
+
+.inquiry-form .form-input:focus,
+.inquiry-form .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.07);
+}
+
+.inquiry-form-privacy {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.inquiry-form-privacy a {
+  color: var(--text-secondary);
+}
+
+.inquiry-success {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--accent-success);
+}
+
+.inquiry-success strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+
+.inquiry-success span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------- Reszponzív */
+
+@media (max-width: 860px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+
   .modal-grid {
     grid-template-columns: 1fr;
     gap: 24px;
-    padding: 24px;
+    padding: 24px 20px;
   }
 
   .modal-container {
-    max-height: 95vh;
+    max-height: 94vh;
+  }
+
+  .modal-car-title,
+  .modal-price-tag {
+    font-size: 1.45rem;
   }
 
   .gallery-nav-btn {
     width: 40px;
     height: 40px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-cta-btn,
+  .modal-share-btn {
+    flex: 1 1 auto;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 460px) {
+  .specs-grid {
+    gap: 10px;
+  }
+
+  .inquiry-form-row {
+    grid-template-columns: 1fr;
   }
 }

@@ -4,89 +4,89 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Impresszum | MOZSÓ Bizományos Autók</title>
+  <meta name="description" content="A MOZSÓ Bizományos Autók szolgáltatói adatai és impresszuma." />
+  <meta name="robots" content="index, follow" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F172A'/%3E%3Crect x='0' y='0' width='64' height='4' fill='%23C5A880'/%3E%3Ctext x='32' y='43' font-family='Segoe UI,Arial,sans-serif' font-size='26' font-weight='700' fill='%23FFFFFF' text-anchor='middle'%3EMBA%3C/text%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" />
+
   <link rel="stylesheet" href="./src/styles/variables.css" />
   <link rel="stylesheet" href="./src/styles/main.css" />
-  <style>
-    .legal-page {
-      max-width: 860px;
-      margin: 40px auto;
-      padding: 40px;
-      background: var(--bg-surface);
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-xl);
-    }
-    .legal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 2px solid var(--border-light);
-      padding-bottom: 20px;
-      margin-bottom: 32px;
-    }
-    .legal-title {
-      font-family: var(--font-heading);
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-    .btn-close-window {
-      background: var(--bg-dark-accent);
-      color: var(--text-inverse);
-      border: none;
-      padding: 10px 18px;
-      border-radius: var(--radius-md);
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background var(--transition-fast);
-    }
-    .btn-close-window:hover {
-      background: var(--accent-gold);
-      color: var(--accent-dark);
-    }
-    .legal-content h3 {
-      font-family: var(--font-heading);
-      font-size: 1.2rem;
-      margin: 24px 0 12px 0;
-      color: var(--text-primary);
-    }
-    .legal-content p, .legal-content li {
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      line-height: 1.7;
-      margin-bottom: 12px;
-    }
-  </style>
+  <link rel="stylesheet" href="./src/styles/legal.css" />
 </head>
 <body>
-  <div class="legal-page">
-    <div class="legal-header">
-      <div>
-        <span class="brand-sub" style="color:var(--accent-gold); font-weight:700;">MOZSÓ BIZOMÁNYOS AUTÓK</span>
+
+  <main class="legal-page">
+    <a href="./index.html" class="legal-back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Vissza a kínálathoz
+    </a>
+
+    <article class="legal-card">
+      <header class="legal-header">
+        <span class="legal-eyebrow">MOZSÓ Bizományos Autók</span>
         <h1 class="legal-title">Impresszum</h1>
+        <p class="legal-effective">Az elektronikus kereskedelmi szolgáltatásokról szóló 2001. évi CVIII. törvény (Ekertv.) 4. §-a szerinti tájékoztatás.</p>
+      </header>
+
+      <div class="legal-content">
+        <div class="legal-notice">
+          <p><strong>Fejlesztői megjegyzés:</strong> az alábbi, sárgával jelölt mezők jogszabály által kötelezően közlendő adatok. Éles indulás előtt ezeket a megrendelő valós céges adataira kell cserélni. Keresés a projektben: <code>KITÖLTENDŐ</code>.</p>
+        </div>
+
+        <h2>1. A szolgáltató adatai</h2>
+        <ul class="legal-data-list">
+          <li><dfn>Cégnév / vállalkozás neve:</dfn> <span class="todo-field">KITÖLTENDŐ – teljes cégnév</span></li>
+          <li><dfn>Székhely:</dfn> <span class="todo-field">KITÖLTENDŐ – irányítószám, település, utca, házszám</span></li>
+          <li><dfn>Telephely / bemutatóterem:</dfn> <span class="todo-field">KITÖLTENDŐ – telephely címe</span></li>
+          <li><dfn>Adószám:</dfn> <span class="todo-field">KITÖLTENDŐ</span></li>
+          <li><dfn>Cégjegyzék- / nyilvántartási szám:</dfn> <span class="todo-field">KITÖLTENDŐ</span></li>
+          <li><dfn>Nyilvántartásba vevő hatóság:</dfn> <span class="todo-field">KITÖLTENDŐ – pl. illetékes törvényszék cégbírósága</span></li>
+          <li><dfn>Képviselő:</dfn> <span class="todo-field">KITÖLTENDŐ – név</span></li>
+          <li><dfn>Telefonszám:</dfn> <span class="todo-field">KITÖLTENDŐ</span></li>
+          <li><dfn>E-mail cím:</dfn> <span class="todo-field">KITÖLTENDŐ – a kereskedés e-mail címe</span></li>
+        </ul>
+
+        <h2>2. Tárhelyszolgáltató</h2>
+        <ul class="legal-data-list">
+          <li><dfn>Név:</dfn> Netlify, Inc.</li>
+          <li><dfn>Székhely:</dfn> 512 2nd Street, Suite 200, San Francisco, CA 94107, Amerikai Egyesült Államok</li>
+          <li><dfn>Elérhetőség:</dfn> <a href="https://www.netlify.com/support/" target="_blank" rel="noopener">netlify.com/support</a></li>
+        </ul>
+
+        <h2>3. Adatbázis- és felhőszolgáltató</h2>
+        <ul class="legal-data-list">
+          <li><dfn>Név:</dfn> Supabase, Inc.</li>
+          <li><dfn>Szolgáltatás:</dfn> adatbázis- és fájltárolási infrastruktúra</li>
+          <li><dfn>Adatvédelmi tájékoztató:</dfn> <a href="https://supabase.com/privacy" target="_blank" rel="noopener">supabase.com/privacy</a></li>
+        </ul>
+
+        <h2>4. Panaszkezelés és jogorvoslat</h2>
+        <p>
+          Fogyasztói panasszal a szolgáltató fenti elérhetőségein élhet. Amennyiben a panaszkezelés nem vezet
+          eredményre, a fogyasztó a lakóhelye szerint illetékes békéltető testülethez, illetve a területileg
+          illetékes kormányhivatal fogyasztóvédelmi hatóságához fordulhat.
+        </p>
+        <ul class="legal-data-list">
+          <li><dfn>Illetékes békéltető testület:</dfn> <span class="todo-field">KITÖLTENDŐ – a székhely szerint illetékes testület neve és címe</span></li>
+        </ul>
+
+        <h2>5. A weboldal fejlesztése</h2>
+        <p>
+          A weboldal arculatát és szoftveres megvalósítását az
+          <strong>SA Software &amp; Network Solutions</strong> készítette
+          (<a href="mailto:avar.szilveszter@gmail.com">avar.szilveszter@gmail.com</a>).
+          Technikai jellegű megkeresésekkel ezen a címen lehet élni; a kereskedéssel kapcsolatos
+          ügyekben kérjük, a szolgáltató fenti elérhetőségeit használja.
+        </p>
       </div>
-      <button onclick="window.close()" class="btn-close-window">
-        Bezárás &times;
-      </button>
-    </div>
+    </article>
+  </main>
 
-    <div class="legal-content">
-      <h3>1. Szolgáltató Adatai</h3>
-      <p><strong>Cégnév / Megnevezés:</strong> MOZSÓ Bizományos Autók</p>
-      <p><strong>Székhely / Telephely:</strong> Magyarország</p>
-      <p><strong>Kapcsolattartó e-mail:</strong> avar.szilveszter@gmail.com</p>
-
-      <h3>2. Fejlesztés & Rendszerüzemeltetés</h3>
-      <p><strong>Tervezés és Fejlesztés:</strong> SA Software & Network Solutions</p>
-      <p><strong>Fejlesztői e-mail:</strong> avar.szilveszter@gmail.com</p>
-      <p><strong>Adatbázis & Felhő Infrastruktúra:</strong> Supabase Inc. (Database & Auth Services)</p>
-
-      <h3>3. Tárhelyszolgáltató Adatai</h3>
-      <p>A weboldal felhőalapú tárhelyszolgáltató infrastruktúrán üzemel.</p>
-    </div>
-  </div>
 </body>
 </html>

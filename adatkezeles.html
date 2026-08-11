@@ -3,93 +3,109 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Adatkezelési Tájékoztató | MOZSÓ Bizományos Autók</title>
+  <title>Adatkezelési tájékoztató | MOZSÓ Bizományos Autók</title>
+  <meta name="description" content="A MOZSÓ Bizományos Autók GDPR szerinti adatkezelési tájékoztatója." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F172A'/%3E%3Crect x='0' y='0' width='64' height='4' fill='%23C5A880'/%3E%3Ctext x='32' y='43' font-family='Segoe UI,Arial,sans-serif' font-size='26' font-weight='700' fill='%23FFFFFF' text-anchor='middle'%3EMBA%3C/text%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" />
+
   <link rel="stylesheet" href="./src/styles/variables.css" />
   <link rel="stylesheet" href="./src/styles/main.css" />
-  <style>
-    .legal-page {
-      max-width: 860px;
-      margin: 40px auto;
-      padding: 40px;
-      background: var(--bg-surface);
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-xl);
-    }
-    .legal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 2px solid var(--border-light);
-      padding-bottom: 20px;
-      margin-bottom: 32px;
-    }
-    .legal-title {
-      font-family: var(--font-heading);
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-    .btn-close-window {
-      background: var(--bg-dark-accent);
-      color: var(--text-inverse);
-      border: none;
-      padding: 10px 18px;
-      border-radius: var(--radius-md);
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background var(--transition-fast);
-    }
-    .btn-close-window:hover {
-      background: var(--accent-gold);
-      color: var(--accent-dark);
-    }
-    .legal-content h3 {
-      font-family: var(--font-heading);
-      font-size: 1.2rem;
-      margin: 24px 0 12px 0;
-      color: var(--text-primary);
-    }
-    .legal-content p, .legal-content li {
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      line-height: 1.7;
-      margin-bottom: 12px;
-    }
-  </style>
+  <link rel="stylesheet" href="./src/styles/legal.css" />
 </head>
 <body>
-  <div class="legal-page">
-    <div class="legal-header">
-      <div>
-        <span class="brand-sub" style="color:var(--accent-gold); font-weight:700;">MOZSÓ BIZOMÁNYOS AUTÓK</span>
-        <h1 class="legal-title">Adatkezelési Tájékoztató</h1>
+
+  <main class="legal-page">
+    <a href="./index.html" class="legal-back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Vissza a kínálathoz
+    </a>
+
+    <article class="legal-card">
+      <header class="legal-header">
+        <span class="legal-eyebrow">MOZSÓ Bizományos Autók</span>
+        <h1 class="legal-title">Adatkezelési tájékoztató</h1>
+        <p class="legal-effective">Az Európai Parlament és a Tanács (EU) 2016/679 rendelete (GDPR) alapján. Hatályos: 2026. január 1-től.</p>
+      </header>
+
+      <div class="legal-content">
+        <div class="legal-notice">
+          <p><strong>Fejlesztői megjegyzés:</strong> a sárgával jelölt mezők kötelezően közlendő adatok. Éles indulás előtt a megrendelő valós céges adataira kell cserélni őket.</p>
+        </div>
+
+        <h2>1. Az adatkezelő</h2>
+        <ul class="legal-data-list">
+          <li><dfn>Név:</dfn> <span class="todo-field">KITÖLTENDŐ – teljes cégnév</span></li>
+          <li><dfn>Székhely:</dfn> <span class="todo-field">KITÖLTENDŐ – cím</span></li>
+          <li><dfn>E-mail cím:</dfn> <span class="todo-field">KITÖLTENDŐ – a kereskedés e-mail címe</span></li>
+          <li><dfn>Telefonszám:</dfn> <span class="todo-field">KITÖLTENDŐ</span></li>
+        </ul>
+
+        <h2>2. A kezelt adatok köre és célja</h2>
+        <p>
+          A weboldalon keresztül kizárólag akkor kezelünk személyes adatot, ha Ön az „Visszahívást kérek"
+          űrlapot önként kitölti. Ilyenkor a következő adatokat kezeljük:
+        </p>
+        <ul>
+          <li><strong>Név</strong> – a megkeresés személyre szabott kezeléséhez</li>
+          <li><strong>Telefonszám</strong> – a visszahíváshoz</li>
+          <li><strong>Üzenet (opcionális)</strong> – az érdeklődés tartalmának megértéséhez</li>
+          <li><strong>Az érdeklődéssel érintett gépjármű azonosítója</strong> – hogy tudjuk, melyik autóról van szó</li>
+        </ul>
+        <p>
+          <strong>Az adatkezelés célja:</strong> a gépjárművel kapcsolatos érdeklődés megválaszolása és
+          időpont-egyeztetés. <strong>Jogalapja:</strong> az Ön hozzájárulása, illetve a szerződés
+          megkötését megelőző lépések megtétele (GDPR 6. cikk (1) bekezdés a) és b) pont).
+        </p>
+
+        <h2>3. Adattárolás és megőrzési idő</h2>
+        <p>
+          Az adatokat a Supabase, Inc. által üzemeltetett, titkosított felhőalapú adatbázisban tároljuk.
+          Az érdeklődéseket a megkeresés lezárásától számított <strong>legfeljebb 12 hónapig</strong> őrizzük meg,
+          ezt követően töröljük. Adatait harmadik félnek marketing célból nem adjuk át és nem értékesítjük.
+        </p>
+
+        <h2>4. Adatfeldolgozók</h2>
+        <ul class="legal-data-list">
+          <li><dfn>Supabase, Inc.</dfn> adatbázis- és fájltárolás – <a href="https://supabase.com/privacy" target="_blank" rel="noopener">adatvédelmi tájékoztató</a></li>
+          <li><dfn>Netlify, Inc.</dfn> tárhelyszolgáltatás – <a href="https://www.netlify.com/privacy/" target="_blank" rel="noopener">adatvédelmi tájékoztató</a></li>
+          <li><dfn>Google LLC</dfn> betűtípusok kiszolgálása (Google Fonts) – <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">adatvédelmi tájékoztató</a></li>
+        </ul>
+
+        <h2>5. Sütik (cookie-k)</h2>
+        <p>
+          A weboldal nem használ marketing- vagy analitikai sütiket, és nem követi a látogatók viselkedését.
+          A böngésző helyi tárolóját kizárólag az adminisztrátori bejelentkezés munkamenetének fenntartására
+          használjuk, ami a weboldal működéséhez feltétlenül szükséges.
+        </p>
+
+        <h2>6. Az Ön jogai</h2>
+        <p>Ön bármikor jogosult:</p>
+        <ul>
+          <li>tájékoztatást kérni a kezelt adatairól,</li>
+          <li>azok helyesbítését vagy törlését kérni,</li>
+          <li>az adatkezelés korlátozását kérni,</li>
+          <li>hozzájárulását bármikor visszavonni,</li>
+          <li>adathordozhatósággal élni.</li>
+        </ul>
+        <p>
+          Kérelmét az 1. pontban megadott elérhetőségeken jelezheti; azt legkésőbb 30 napon belül teljesítjük.
+        </p>
+
+        <h2>7. Jogorvoslat</h2>
+        <p>
+          Panasszal a Nemzeti Adatvédelmi és Információszabadság Hatósághoz fordulhat
+          (1055 Budapest, Falk Miksa utca 9-11., <a href="https://naih.hu" target="_blank" rel="noopener">naih.hu</a>),
+          illetve bírósághoz is fordulhat.
+        </p>
       </div>
-      <button onclick="window.close()" class="btn-close-window">
-        Bezárás &times;
-      </button>
-    </div>
+    </article>
+  </main>
 
-    <div class="legal-content">
-      <p><strong>GDPR Megfelelőségi Nyilatkozat</strong> - Hatályos: 2026. január 1-től.</p>
-
-      <h3>1. Az Adatkezelő Adatai</h3>
-      <p><strong>Név:</strong> MOZSÓ Bizományos Autók</p>
-      <p><strong>E-mail:</strong> avar.szilveszter@gmail.com</p>
-      <p><strong>Rendszerfejlesztő:</strong> SA Software & Network Solutions</p>
-
-      <h3>2. A Kezelt Adatok Körének Célja</h3>
-      <p>Az Adatkezelő a felhasználók által megadott kapcsolattartási adatokat kizárólag a gépjárművekkel kapcsolatos érdeklődések kiszolgálása és egyeztetése céljából kezeli (GDPR 6. cikk (1) b)).</p>
-
-      <h3>3. Adatbiztonság és Adattárolás</h3>
-      <p>Az adatokat szigorúan védett, felhőalapú adatbázisban (Supabase encrypted data infrastructure) tároljuk. Harmadik félnek az adatokat kifejezett hozzájárulás nélkül nem adjuk át.</p>
-
-      <h3>4. Az Érintettek Jogai</h3>
-      <p>Ön bármikor kérheti személyes adatainak törlését, módosítását vagy megtekintését az adatkezelő e-mail címén (avar.szilveszter@gmail.com).</p>
-    </div>
-  </div>
 </body>
 </html>

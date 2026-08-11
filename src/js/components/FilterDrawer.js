@@ -1,24 +1,48 @@
 import { escapeHtml } from '../utils/helpers.js';
 
+const PRICE_STEP = 500000;
+const PRICE_MIN = 1000000;
+const PRICE_FALLBACK_MAX = 100000000;
+
+function defaultState() {
+  return {
+    searchQuery: '',
+    selectedMake: 'all',
+    selectedFuel: 'all',
+    maxPrice: Infinity,      // Infinity = nincs felső határ
+    selectedTransmission: 'all',
+    sortBy: 'newest'
+  };
+}
+
 export class FilterDrawer {
   constructor(options = {}) {
     this.onFilterChange = options.onFilterChange || (() => {});
-    this.state = {
-      searchQuery: '',
-      selectedMake: 'all',
-      selectedFuel: 'all',
-      maxPrice: 100000000,
-      selectedTransmission: 'all',
-      sortBy: 'newest'
-    };
-    
+    this.state = defaultState();
+
     this.makes = [];
     this.fuels = ['Benzin', 'Dízel', 'Hibrid', 'Elektromos'];
+    this.priceCeiling = PRICE_FALLBACK_MAX;
     this.isMobileExpanded = false;
   }
 
-  setAvailableMakes(makes) {
-    this.makes = Array.from(new Set(makes)).sort();
+  /**
+   * A szűrő lehetőségeit a tényleges készletből építjük fel.
+   * Így nem fordulhat elő, hogy egy drágább autó kiesik a szűrőből.
+   */
+  setAvailableOptions(cars) {
+    this.makes = Array.from(new Set(cars.map(c => c.make).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b, 'hu'));
+
+    const prices = cars.map(c => Number(c.price)).filter(p => Number.isFinite(p) && p > 0);
+    const highest = prices.length > 0 ? Math.max(...prices) : PRICE_FALLBACK_MAX;
+
+    // A csúszka teteje mindig a legdrágább autó fölött van.
+    this.priceCeiling = Math.max(
+      PRICE_MIN + PRICE_STEP,
+      Math.ceil(highest / PRICE_STEP) * PRICE_STEP
+    );
+
     this.render();
   }
 
@@ -30,7 +54,6 @@ export class FilterDrawer {
   renderDesktopSidebar() {
     const container = document.getElementById('desktop-filter-container');
     if (!container) return;
-
     container.innerHTML = this.getFilterFormMarkup('desktop');
     this.bindFilterEvents('desktop');
   }
@@ -45,27 +68,29 @@ export class FilterDrawer {
       <div class="mobile-filter-wrapper">
         <div class="mobile-filter-header-bar">
           <div class="mobile-search-box">
-            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input 
-              type="text" 
-              id="mobile-quick-search-input" 
-              class="mobile-search-input" 
-              placeholder="Gyors keresés (márka, típus)..." 
+            <input
+              type="search"
+              id="mobile-quick-search-input"
+              class="mobile-search-input"
+              placeholder="Gyors keresés (márka, típus)..."
+              aria-label="Gyors keresés"
               value="${escapeHtml(this.state.searchQuery)}"
             />
-            ${this.state.searchQuery ? `<button id="mobile-clear-search" class="clear-search-btn">&times;</button>` : ''}
           </div>
 
-          <button id="btn-toggle-mobile-accordion" class="btn-toggle-accordion ${this.isMobileExpanded ? 'active' : ''}">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button type="button" id="btn-toggle-mobile-accordion"
+                  class="btn-toggle-accordion ${this.isMobileExpanded ? 'active' : ''}"
+                  aria-expanded="${this.isMobileExpanded}" aria-controls="mobile-accordion-body">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
             </svg>
             <span>Szűrők</span>
             ${activeFilterCount > 0 ? `<span class="filter-count-badge">${activeFilterCount}</span>` : ''}
-            <svg class="chevron-icon ${this.isMobileExpanded ? 'rotated' : ''}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="chevron-icon ${this.isMobileExpanded ? 'rotated' : ''}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M6 9l6 6 6-6"></path>
             </svg>
           </button>
@@ -85,86 +110,75 @@ export class FilterDrawer {
 
   getActiveFilterCount() {
     let count = 0;
+    if (this.state.searchQuery.trim()) count++;
     if (this.state.selectedMake !== 'all') count++;
     if (this.state.selectedFuel !== 'all') count++;
     if (this.state.selectedTransmission !== 'all') count++;
-    if (this.state.maxPrice < 100000000) count++;
+    if (Number.isFinite(this.state.maxPrice)) count++;
     if (this.state.sortBy !== 'newest') count++;
     return count;
   }
 
   bindMobileAccordionEvents() {
     const toggleBtn = document.getElementById('btn-toggle-mobile-accordion');
-    const headerBtnMobile = document.getElementById('btn-mobile-filter');
     const quickSearchInput = document.getElementById('mobile-quick-search-input');
-    const clearSearchBtn = document.getElementById('mobile-clear-search');
 
-    const toggleFn = () => {
+    toggleBtn?.addEventListener('click', () => {
       this.isMobileExpanded = !this.isMobileExpanded;
-      const accordionBody = document.getElementById('mobile-accordion-body');
-      const chevron = toggleBtn ? toggleBtn.querySelector('.chevron-icon') : null;
 
-      if (toggleBtn) toggleBtn.classList.toggle('active', this.isMobileExpanded);
-      if (accordionBody) accordionBody.classList.toggle('expanded', this.isMobileExpanded);
-      if (chevron) chevron.classList.toggle('rotated', this.isMobileExpanded);
-    };
+      document.getElementById('mobile-accordion-body')
+        ?.classList.toggle('expanded', this.isMobileExpanded);
+      toggleBtn.classList.toggle('active', this.isMobileExpanded);
+      toggleBtn.setAttribute('aria-expanded', String(this.isMobileExpanded));
+      toggleBtn.querySelector('.chevron-icon')?.classList.toggle('rotated', this.isMobileExpanded);
+    });
 
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', toggleFn);
-    }
+    // Nincs újrarajzolás gépelés közben, hogy ne vesszen el a fókusz.
+    quickSearchInput?.addEventListener('input', (e) => {
+      this.state.searchQuery = e.target.value;
+      this.syncSearchInputs('mobile-quick-search-input');
+      this.updateFilterBadge();
+      this.emitChange();
+    });
+  }
 
-    if (headerBtnMobile) {
-      headerBtnMobile.onclick = () => {
-        if (!this.isMobileExpanded) {
-          toggleFn();
-        }
-        const mobileContainer = document.getElementById('mobile-filter-container');
-        if (mobileContainer) {
-          mobileContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      };
-    }
+  /** A három keresőmező (mobil gyors, mobil űrlap, desktop) együtt mozogjon. */
+  syncSearchInputs(sourceId) {
+    ['mobile-quick-search-input', 'desktop-search-input', 'mobile-search-input'].forEach(id => {
+      if (id === sourceId) return;
+      const el = document.getElementById(id);
+      if (el && el.value !== this.state.searchQuery) el.value = this.state.searchQuery;
+    });
+  }
 
-    if (quickSearchInput) {
-      quickSearchInput.addEventListener('input', (e) => {
-        this.state.searchQuery = e.target.value;
-        const desktopSearch = document.getElementById('desktop-search-input');
-        if (desktopSearch) desktopSearch.value = this.state.searchQuery;
-        const mobileFormSearch = document.getElementById('mobile-search-input');
-        if (mobileFormSearch) mobileFormSearch.value = this.state.searchQuery;
-        this.emitChange();
-      });
-    }
-
-    if (clearSearchBtn) {
-      clearSearchBtn.addEventListener('click', () => {
-        this.state.searchQuery = '';
-        this.render();
-        this.emitChange();
-      });
-    }
+  priceLabel() {
+    if (!Number.isFinite(this.state.maxPrice)) return 'Nincs felső határ';
+    return `${(this.state.maxPrice / 1000000).toFixed(1).replace('.0', '')} M Ft-ig`;
   }
 
   getFilterFormMarkup(prefix) {
+    // A csúszka legfelső állása a "nincs felső határ" - egy lépéssel a
+    // legdrágább autó fölött.
+    const sliderMax = this.priceCeiling + PRICE_STEP;
+    const sliderValue = Number.isFinite(this.state.maxPrice) ? this.state.maxPrice : sliderMax;
+
     return `
       <div class="filter-panel">
         <div class="filter-header">
           <span class="filter-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
             </svg>
-            Részletes Szűrés
+            Szűrés
           </span>
-          <button class="btn-clear-filters" id="${prefix}-clear-btn">Alaphelyzet</button>
+          <button type="button" class="btn-clear-filters" id="${prefix}-clear-btn">Alaphelyzet</button>
         </div>
 
-        <!-- Search Input -->
         <div class="filter-group">
-          <label class="filter-label" for="${prefix}-search-input">Modell vagy Márka</label>
-          <input type="text" id="${prefix}-search-input" class="filter-input" placeholder="pl. BMW, M4..." value="${escapeHtml(this.state.searchQuery)}" />
+          <label class="filter-label" for="${prefix}-search-input">Modell vagy márka</label>
+          <input type="search" id="${prefix}-search-input" class="filter-input" placeholder="pl. BMW, M4..." value="${escapeHtml(this.state.searchQuery)}" />
         </div>
 
-        <!-- Make Select -->
         <div class="filter-group">
           <label class="filter-label" for="${prefix}-make-select">Márka</label>
           <select id="${prefix}-make-select" class="filter-select">
@@ -173,7 +187,6 @@ export class FilterDrawer {
           </select>
         </div>
 
-        <!-- Fuel Select -->
         <div class="filter-group">
           <label class="filter-label" for="${prefix}-fuel-select">Üzemanyag</label>
           <select id="${prefix}-fuel-select" class="filter-select">
@@ -182,18 +195,16 @@ export class FilterDrawer {
           </select>
         </div>
 
-        <!-- Maximum Price Slider -->
         <div class="filter-group">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <label class="filter-label" style="margin:0;">Max. Ár</label>
-            <span style="font-size:0.85rem; font-weight:700; color:var(--text-primary);" id="${prefix}-price-val">
-              ${(this.state.maxPrice / 1000000).toFixed(0)} M Ft
-            </span>
+          <div class="filter-label-row">
+            <label class="filter-label" for="${prefix}-price-range">Max. ár</label>
+            <span class="filter-value-badge" id="${prefix}-price-val">${this.priceLabel()}</span>
           </div>
-          <input type="range" id="${prefix}-price-range" min="5000000" max="100000000" step="1000000" value="${this.state.maxPrice}" style="width:100%; accent-color: var(--accent-dark); cursor:pointer;" />
+          <input type="range" id="${prefix}-price-range" class="filter-range"
+                 min="${PRICE_MIN}" max="${sliderMax}" step="${PRICE_STEP}" value="${sliderValue}"
+                 aria-label="Maximum ár" />
         </div>
 
-        <!-- Transmission Select -->
         <div class="filter-group">
           <label class="filter-label" for="${prefix}-trans-select">Váltó</label>
           <select id="${prefix}-trans-select" class="filter-select">
@@ -203,12 +214,11 @@ export class FilterDrawer {
           </select>
         </div>
 
-        <!-- Sort By -->
         <div class="filter-group">
           <label class="filter-label" for="${prefix}-sort-select">Rendezés</label>
           <select id="${prefix}-sort-select" class="filter-select">
-            <option value="newest" ${this.state.sortBy === 'newest' ? 'selected' : ''}>Legújabb elöl</option>
-            <option value="price-asc" ${this.state.sortBy === 'price-asc' ? 'selected' : ''}>Ár szerint növekvő</option>
+            <option value="newest"     ${this.state.sortBy === 'newest' ? 'selected' : ''}>Legújabb elöl</option>
+            <option value="price-asc"  ${this.state.sortBy === 'price-asc' ? 'selected' : ''}>Ár szerint növekvő</option>
             <option value="price-desc" ${this.state.sortBy === 'price-desc' ? 'selected' : ''}>Ár szerint csökkenő</option>
           </select>
         </div>
@@ -217,88 +227,87 @@ export class FilterDrawer {
   }
 
   bindFilterEvents(prefix) {
-    const searchInput = document.getElementById(`${prefix}-search-input`);
-    const makeSelect = document.getElementById(`${prefix}-make-select`);
-    const fuelSelect = document.getElementById(`${prefix}-fuel-select`);
-    const priceRange = document.getElementById(`${prefix}-price-range`);
-    const transSelect = document.getElementById(`${prefix}-trans-select`);
-    const sortSelect = document.getElementById(`${prefix}-sort-select`);
-    const clearBtn = document.getElementById(`${prefix}-clear-btn`);
+    const $ = (suffix) => document.getElementById(`${prefix}-${suffix}`);
 
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        this.state.searchQuery = e.target.value;
-        const otherSearch = document.getElementById(prefix === 'desktop' ? 'mobile-quick-search-input' : 'desktop-search-input');
-        if (otherSearch) otherSearch.value = this.state.searchQuery;
-        this.emitChange();
-      });
-    }
+    $('search-input')?.addEventListener('input', (e) => {
+      this.state.searchQuery = e.target.value;
+      this.syncSearchInputs(`${prefix}-search-input`);
+      this.updateFilterBadge();
+      this.emitChange();
+    });
 
-    if (makeSelect) {
-      makeSelect.addEventListener('change', (e) => {
-        this.state.selectedMake = e.target.value;
-        this.updateFilterBadge();
-        this.emitChange();
-      });
-    }
+    $('make-select')?.addEventListener('change', (e) => {
+      this.state.selectedMake = e.target.value;
+      this.syncSelects('make-select', e.target.value);
+      this.updateFilterBadge();
+      this.emitChange();
+    });
 
-    if (fuelSelect) {
-      fuelSelect.addEventListener('change', (e) => {
-        this.state.selectedFuel = e.target.value;
-        this.updateFilterBadge();
-        this.emitChange();
-      });
-    }
+    $('fuel-select')?.addEventListener('change', (e) => {
+      this.state.selectedFuel = e.target.value;
+      this.syncSelects('fuel-select', e.target.value);
+      this.updateFilterBadge();
+      this.emitChange();
+    });
 
-    if (priceRange) {
-      priceRange.addEventListener('input', (e) => {
-        this.state.maxPrice = Number(e.target.value);
-        const valDisplay = document.getElementById(`${prefix}-price-val`);
-        if (valDisplay) valDisplay.textContent = `${(this.state.maxPrice / 1000000).toFixed(0)} M Ft`;
-        this.updateFilterBadge();
-        this.emitChange();
-      });
-    }
+    $('trans-select')?.addEventListener('change', (e) => {
+      this.state.selectedTransmission = e.target.value;
+      this.syncSelects('trans-select', e.target.value);
+      this.updateFilterBadge();
+      this.emitChange();
+    });
 
-    if (transSelect) {
-      transSelect.addEventListener('change', (e) => {
-        this.state.selectedTransmission = e.target.value;
-        this.updateFilterBadge();
-        this.emitChange();
-      });
-    }
+    $('sort-select')?.addEventListener('change', (e) => {
+      this.state.sortBy = e.target.value;
+      this.syncSelects('sort-select', e.target.value);
+      this.updateFilterBadge();
+      this.emitChange();
+    });
 
-    if (sortSelect) {
-      sortSelect.addEventListener('change', (e) => {
-        this.state.sortBy = e.target.value;
-        this.updateFilterBadge();
-        this.emitChange();
-      });
-    }
+    $('price-range')?.addEventListener('input', (e) => {
+      const value = Number(e.target.value);
+      const sliderMax = Number(e.target.max);
+      // Legfelső állás = nincs felső határ
+      this.state.maxPrice = value >= sliderMax ? Infinity : value;
 
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        this.resetFilters();
+      ['desktop', 'mobile'].forEach(p => {
+        const label = document.getElementById(`${p}-price-val`);
+        if (label) label.textContent = this.priceLabel();
+        const range = document.getElementById(`${p}-price-range`);
+        if (range && range !== e.target) range.value = value;
       });
-    }
+
+      this.updateFilterBadge();
+      this.emitChange();
+    });
+
+    $('clear-btn')?.addEventListener('click', () => this.resetFilters());
+  }
+
+  /** A desktop és a mobil űrlap ugyanazt az állapotot mutassa. */
+  syncSelects(suffix, value) {
+    ['desktop', 'mobile'].forEach(p => {
+      const el = document.getElementById(`${p}-${suffix}`);
+      if (el && el.value !== value) el.value = value;
+    });
   }
 
   updateFilterBadge() {
     const toggleBtn = document.getElementById('btn-toggle-mobile-accordion');
-    const count = this.getActiveFilterCount();
+    if (!toggleBtn) return;
 
-    if (toggleBtn) {
-      let badge = toggleBtn.querySelector('.filter-count-badge');
-      if (count > 0) {
-        if (!badge) {
-          badge = document.createElement('span');
-          badge.className = 'filter-count-badge';
-          toggleBtn.insertBefore(badge, toggleBtn.querySelector('.chevron-icon'));
-        }
-        badge.textContent = count;
-      } else if (badge) {
-        badge.remove();
+    const count = this.getActiveFilterCount();
+    let badge = toggleBtn.querySelector('.filter-count-badge');
+
+    if (count > 0) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'filter-count-badge';
+        toggleBtn.insertBefore(badge, toggleBtn.querySelector('.chevron-icon'));
       }
+      badge.textContent = count;
+    } else if (badge) {
+      badge.remove();
     }
   }
 
@@ -307,62 +316,37 @@ export class FilterDrawer {
   }
 
   resetFilters() {
-    this.state = {
-      searchQuery: '',
-      selectedMake: 'all',
-      selectedFuel: 'all',
-      maxPrice: 100000000,
-      selectedTransmission: 'all',
-      sortBy: 'newest'
-    };
+    this.state = defaultState();
     this.render();
     this.emitChange();
   }
 
-  openMobileDrawer() {
-    this.isMobileExpanded = true;
-    this.renderMobileAccordion();
-    const mobileContainer = document.getElementById('mobile-filter-container');
-    if (mobileContainer) {
-      mobileContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
   applyFilter(cars) {
+    const query = this.state.searchQuery.trim().toLowerCase();
+
     return cars.filter(car => {
-      // Search text
-      if (this.state.searchQuery) {
-        const query = this.state.searchQuery.toLowerCase();
-        const title = `${car.make} ${car.model}`.toLowerCase();
-        if (!title.includes(query)) return false;
+      if (query) {
+        // A leírásban és az évjáratban is keresünk, nem csak a márkában.
+        const haystack = [car.make, car.model, car.year, car.fuel, car.transmission, car.color, car.description]
+          .filter(Boolean).join(' ').toLowerCase();
+        if (!haystack.includes(query)) return false;
       }
 
-      // Make
-      if (this.state.selectedMake !== 'all' && car.make !== this.state.selectedMake) {
-        return false;
-      }
+      if (this.state.selectedMake !== 'all' && car.make !== this.state.selectedMake) return false;
+      if (this.state.selectedFuel !== 'all' && car.fuel !== this.state.selectedFuel) return false;
+      if (this.state.selectedTransmission !== 'all' && car.transmission !== this.state.selectedTransmission) return false;
 
-      // Fuel
-      if (this.state.selectedFuel !== 'all' && car.fuel !== this.state.selectedFuel) {
-        return false;
-      }
-
-      // Transmission
-      if (this.state.selectedTransmission !== 'all' && car.transmission !== this.state.selectedTransmission) {
-        return false;
-      }
-
-      // Price
-      if (car.price && car.price > this.state.maxPrice) {
-        return false;
+      // Ár nélküli autó ("Ár érdeklődésre") nem esik ki az ársávból.
+      const price = Number(car.price);
+      if (Number.isFinite(this.state.maxPrice) && Number.isFinite(price) && price > 0) {
+        if (price > this.state.maxPrice) return false;
       }
 
       return true;
     }).sort((a, b) => {
-      if (this.state.sortBy === 'price-asc') return (a.price || 0) - (b.price || 0);
-      if (this.state.sortBy === 'price-desc') return (b.price || 0) - (a.price || 0);
-      return 0; // default order
+      if (this.state.sortBy === 'price-asc') return (Number(a.price) || 0) - (Number(b.price) || 0);
+      if (this.state.sortBy === 'price-desc') return (Number(b.price) || 0) - (Number(a.price) || 0);
+      return 0; // az adatbázis már created_at szerint csökkenőben adja
     });
   }
 }
-

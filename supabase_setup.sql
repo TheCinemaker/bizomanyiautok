@@ -1,109 +1,209 @@
--- ================================================
--- APEX MOTORS - SUPABASE DATABASE SETUP SCRIPT
--- Project URL: https://qceznytdsqdcodgrgoxd.supabase.co
--- Run this script in your Supabase SQL Editor!
--- ================================================
+-- ============================================================================
+-- MOZSÓ BIZOMÁNYOS AUTÓK - SUPABASE ADATBÁZIS BEÁLLÍTÁS
+-- Futtasd a Supabase Dashboard > SQL Editor felületén.
+--
+-- FONTOS BIZTONSÁGI VÁLTOZÁS A KORÁBBI VERZIÓHOZ KÉPEST:
+-- A régi séma nyilvános INSERT / UPDATE / DELETE jogot adott, ami azt
+-- jelentette, hogy bárki, aki megnyitotta a böngésző konzolját, kitörölhette
+-- a teljes készletet. Mostantól az írás kizárólag bejelentkezett, az
+-- admin_users táblában szereplő e-mail címekhez van kötve. Ezt a Postgres
+-- kényszeríti ki, nem a JavaScript - így böngészőből megkerülhetetlen.
+-- ============================================================================
 
--- 1. Create 'cars' table
-CREATE TABLE IF NOT EXISTS public.cars (
-    id TEXT PRIMARY KEY,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    make TEXT NOT NULL,
-    model TEXT NOT NULL,
-    price NUMERIC NOT NULL,
-    year INT DEFAULT 2024,
-    mileage INT DEFAULT 0,
-    displacement INT DEFAULT 0,
-    power INT DEFAULT 0,
-    fuel TEXT,
-    transmission TEXT,
-    color TEXT,
-    condition TEXT DEFAULT 'Kitűnő',
-    description TEXT,
-    images JSONB DEFAULT '[]'::jsonb
+
+-- ----------------------------------------------------------------------------
+-- 1. Admin felhasználók listája
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.admin_users (
+    email TEXT PRIMARY KEY,
+    role  TEXT NOT NULL DEFAULT 'owner',   -- 'admin' (fejlesztő) vagy 'owner' (megrendelő)
+    note  TEXT
 );
 
--- 2. Enable Row Level Security (RLS)
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+-- Szándékosan NINCS policy: így a tábla a kliens felől teljesen láthatatlan,
+-- csak a szerveroldali policy-k és a service_role fér hozzá.
+
+-- >>> ÍRD ÁT A KÉT E-MAIL CÍMET A SAJÁTOTOKRA <<<
+INSERT INTO public.admin_users (email, role, note) VALUES
+    ('fejleszto@pelda.hu',   'admin', 'SA Software & Network Solutions - fejlesztő'),
+    ('tulajdonos@pelda.hu',  'owner', 'MOZSÓ Bizományos Autók - megrendelő')
+ON CONFLICT (email) DO NOTHING;
+
+
+-- ----------------------------------------------------------------------------
+-- 2. Segédfüggvény: a belépett felhasználó admin-e?
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN
+LANGUAGE SQL
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM public.admin_users
+        WHERE lower(email) = lower(COALESCE(auth.jwt() ->> 'email', ''))
+    );
+$$;
+
+
+-- ----------------------------------------------------------------------------
+-- 3. 'cars' tábla
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.cars (
+    id           TEXT PRIMARY KEY,
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ DEFAULT NOW(),
+    make         TEXT NOT NULL,
+    model        TEXT NOT NULL,
+    price        NUMERIC NOT NULL,
+    year         INT DEFAULT 2024,
+    mileage      INT DEFAULT 0,
+    displacement INT DEFAULT 0,
+    power        INT DEFAULT 0,
+    fuel         TEXT,
+    transmission TEXT,
+    color        TEXT,
+    condition    TEXT DEFAULT 'Kitűnő',
+    description  TEXT,
+    images       JSONB DEFAULT '[]'::jsonb
+);
+
+-- Korábbi telepítésből hiányozhat:
+ALTER TABLE public.cars ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+-- Az updated_at-ot az adatbázis tartja karban, nem a kliens. Így a mentés
+-- akkor sem hasal el, ha a séma és a kliens verziója eltér.
+CREATE OR REPLACE FUNCTION public.touch_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS cars_touch_updated_at ON public.cars;
+CREATE TRIGGER cars_touch_updated_at
+    BEFORE UPDATE ON public.cars
+    FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+
+-- Rendezéshez / szűréshez
+CREATE INDEX IF NOT EXISTS cars_created_at_idx ON public.cars (created_at DESC);
+CREATE INDEX IF NOT EXISTS cars_make_idx       ON public.cars (make);
+
+
+-- ----------------------------------------------------------------------------
+-- 4. RLS a 'cars' táblán
+-- ----------------------------------------------------------------------------
 ALTER TABLE public.cars ENABLE ROW LEVEL SECURITY;
 
--- 3. Create RLS Policies for Public Access (Read, Insert, Update, Delete)
-CREATE POLICY "Allow public read access" ON public.cars
+-- A régi, nyitott policy-k eltávolítása (ha léteznek)
+DROP POLICY IF EXISTS "Allow public read access"   ON public.cars;
+DROP POLICY IF EXISTS "Allow public insert access" ON public.cars;
+DROP POLICY IF EXISTS "Allow public update access" ON public.cars;
+DROP POLICY IF EXISTS "Allow public delete access" ON public.cars;
+
+DROP POLICY IF EXISTS "cars_public_read"  ON public.cars;
+DROP POLICY IF EXISTS "cars_admin_insert" ON public.cars;
+DROP POLICY IF EXISTS "cars_admin_update" ON public.cars;
+DROP POLICY IF EXISTS "cars_admin_delete" ON public.cars;
+
+-- Olvasás: mindenkinek (ez a nyilvános kínálat)
+CREATE POLICY "cars_public_read" ON public.cars
     FOR SELECT USING (true);
 
-CREATE POLICY "Allow public insert access" ON public.cars
+-- Írás: kizárólag belépett adminnak
+CREATE POLICY "cars_admin_insert" ON public.cars
+    FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+
+CREATE POLICY "cars_admin_update" ON public.cars
+    FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+CREATE POLICY "cars_admin_delete" ON public.cars
+    FOR DELETE TO authenticated USING (public.is_admin());
+
+
+-- ----------------------------------------------------------------------------
+-- 5. Fotótároló (Storage)
+--    A fotók mostantól NEM base64-ként kerülnek az adatbázisba, hanem
+--    tárolóba, és csak az URL-jük megy a 'cars.images' mezőbe.
+-- ----------------------------------------------------------------------------
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('car-photos', 'car-photos', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "car_photos_public_read"  ON storage.objects;
+DROP POLICY IF EXISTS "car_photos_admin_insert" ON storage.objects;
+DROP POLICY IF EXISTS "car_photos_admin_update" ON storage.objects;
+DROP POLICY IF EXISTS "car_photos_admin_delete" ON storage.objects;
+
+CREATE POLICY "car_photos_public_read" ON storage.objects
+    FOR SELECT USING (bucket_id = 'car-photos');
+
+CREATE POLICY "car_photos_admin_insert" ON storage.objects
+    FOR INSERT TO authenticated WITH CHECK (bucket_id = 'car-photos' AND public.is_admin());
+
+CREATE POLICY "car_photos_admin_update" ON storage.objects
+    FOR UPDATE TO authenticated USING (bucket_id = 'car-photos' AND public.is_admin());
+
+CREATE POLICY "car_photos_admin_delete" ON storage.objects
+    FOR DELETE TO authenticated USING (bucket_id = 'car-photos' AND public.is_admin());
+
+
+-- ----------------------------------------------------------------------------
+-- 6. Érdeklődések tábla
+--    A vevő "Érdeklődés" gombja mostantól valóban rögzít egy megkeresést.
+--    Beírni bárki tud (ez a lényege), de olvasni csak az admin.
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.inquiries (
+    id         BIGSERIAL PRIMARY KEY,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    car_id     TEXT,
+    car_label  TEXT,
+    name       TEXT NOT NULL,
+    phone      TEXT NOT NULL,
+    email      TEXT,
+    message    TEXT,
+    handled    BOOLEAN DEFAULT FALSE
+);
+
+ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "inquiries_public_insert" ON public.inquiries;
+DROP POLICY IF EXISTS "inquiries_admin_read"    ON public.inquiries;
+DROP POLICY IF EXISTS "inquiries_admin_update"  ON public.inquiries;
+DROP POLICY IF EXISTS "inquiries_admin_delete"  ON public.inquiries;
+
+CREATE POLICY "inquiries_public_insert" ON public.inquiries
     FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Allow public update access" ON public.cars
-    FOR UPDATE USING (true);
+CREATE POLICY "inquiries_admin_read" ON public.inquiries
+    FOR SELECT TO authenticated USING (public.is_admin());
 
-CREATE POLICY "Allow public delete access" ON public.cars
-    FOR DELETE USING (true);
+CREATE POLICY "inquiries_admin_update" ON public.inquiries
+    FOR UPDATE TO authenticated USING (public.is_admin());
 
--- 4. Seed Initial Luxury Cars Data
-INSERT INTO public.cars (id, make, model, year, mileage, displacement, power, fuel, transmission, price, color, condition, description, images)
-VALUES 
-(
-  'car-bmw-m4',
-  'BMW',
-  'M4 Competition xDrive',
-  2024,
-  8500,
-  2993,
-  510,
-  'Benzin',
-  'Automata',
-  38900000,
-  'Dravit Grey Metallic',
-  'Kitűnő',
-  'Sérülésmentes, hivatalos márkaszervizben szervizelt BMW M4 Competition. M Carbon kerámia fékrendszer, M Carbon kagylóülések, Harman Kardon Hifi, Head-Up Display.',
-  '["https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=85", "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=85"]'::jsonb
-),
-(
-  'car-merc-amg-gt',
-  'Mercedes-Benz',
-  'AMG GT 63 S 4MATIC+',
-  2023,
-  14200,
-  3982,
-  639,
-  'Benzin',
-  'Automata',
-  54500000,
-  'Designo Matt Fekete',
-  'Újszerű',
-  'Mercedes-AMG GT 63 S V8 BiTurbo 639LE. AMG Performance kipufogórendszer, kerámia fékek, sárga varrással ellátott Nappa bőr belső, Burmester 3D Surround.',
-  '["https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=85", "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=85"]'::jsonb
-),
-(
-  'car-audi-rs6',
-  'Audi',
-  'RS6 Avant Dynamic Performance',
-  2024,
-  5100,
-  3996,
-  600,
-  'Hibrid',
-  'Automata',
-  49900000,
-  'Nardo Szürke',
-  'Újszerű',
-  'Audi RS6 Avant Mild Hybrid. Bang & Olufsen 3D Advanced Sound System, RS sportkipufogó, DRC sportfutómű, Panorámatető.',
-  '["https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=1200&q=85"]'::jsonb
-),
-(
-  'car-porsche-911',
-  'Porsche',
-  '911 Carrera GTS Coupe',
-  2023,
-  11800,
-  2981,
-  480,
-  'Benzin',
-  'Automata',
-  61900000,
-  'GT Silver Metallic',
-  'Kitűnő',
-  'Porsche 911 992 Carrera GTS PDK. GTS belső csomag Race-Tex elemekkel, PASM sportfutómű -10mm, Sport Chrono csomag.',
-  '["https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=85"]'::jsonb
-)
-ON CONFLICT (id) DO NOTHING;
+CREATE POLICY "inquiries_admin_delete" ON public.inquiries
+    FOR DELETE TO authenticated USING (public.is_admin());
+
+
+-- ============================================================================
+-- TEENDŐ A FUTTATÁS UTÁN
+--
+-- 1. Írd át a 1. pontban a két e-mail címet a valódiakra.
+--
+-- 2. Hozd létre a két felhasználót:
+--    Supabase Dashboard > Authentication > Users > "Add user"
+--    -> "Auto Confirm User" bekapcsolva, e-mail + erős jelszó.
+--    A címeknek egyezniük kell az admin_users táblában lévőkkel.
+--
+-- 3. Authentication > Providers > Email:
+--    kapcsold KI az "Enable Sign Ups" opciót, hogy senki ne
+--    tudjon magának fiókot regisztrálni.
+--
+-- 4. Ellenőrzés: jelentkezz ki az oldalon, nyisd meg a konzolt és próbálj
+--    törölni egy autót. A Supabase-nek el kell utasítania.
+-- ============================================================================

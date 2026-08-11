@@ -3,10 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOZSÓ Bizományos Autók | Minőségi és Garanciális Gépjárművek</title>
-  <meta name="description" content="MOZSÓ Bizományos Autók - Minőségi használt és bizományos gépjárművek azonnali raktárkészletről." />
-  
-  <!-- Stylesheets -->
+
+  <title>MOZSÓ Bizományos Autók | Minőségi és garanciális gépjárművek</title>
+  <meta name="description" content="MOZSÓ Bizományos Autók – minőségi használt és bizományos gépjárművek azonnali raktárkészletről, átvizsgált állapotban, teljes szervizmúlttal." />
+  <meta name="theme-color" content="#0F172A" />
+
+  <!-- Közösségi megosztás (Facebook, Messenger, Viber) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="MOZSÓ Bizományos Autók" />
+  <meta property="og:title" content="MOZSÓ Bizományos Autók" />
+  <meta property="og:description" content="Minőségi használt és bizományos gépjárművek azonnali raktárkészletről." />
+  <meta property="og:locale" content="hu_HU" />
+  <!-- TODO: helyezz el egy 1200x630 px-es képet a public/og-image.jpg útvonalon -->
+  <meta property="og:image" content="/og-image.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Favicon (beágyazott, nem igényel külön fájlt) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F172A'/%3E%3Crect x='0' y='0' width='64' height='4' fill='%23C5A880'/%3E%3Ctext x='32' y='43' font-family='Segoe UI,Arial,sans-serif' font-size='26' font-weight='700' fill='%23FFFFFF' text-anchor='middle'%3EMBA%3C/text%3E%3C/svg%3E" />
+
+  <!-- Betűtípusok: preconnect + link, mert a CSS-be írt @import sorosítja a kéréseket -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" />
+
+  <!-- Stíluslapok -->
   <link rel="stylesheet" href="./src/styles/variables.css" />
   <link rel="stylesheet" href="./src/styles/main.css" />
   <link rel="stylesheet" href="./src/styles/cards.css" />
@@ -16,61 +36,75 @@
 </head>
 <body>
 
-  <!-- Site Header -->
+  <a href="#cars-grid" class="skip-link">Ugrás a kínálathoz</a>
+
+  <!-- Fejléc -->
   <header class="site-header">
     <div class="header-container">
-      
-      <!-- Brand Logo (Holds 1.2s Long-Press Trigger for Secret Admin Access) -->
-      <a href="#" id="brand-logo-trigger" class="brand-logo" title="Hosszú kattintással admin belépés">
-        <div class="logo-badge">MBA</div>
+
+      <!-- A logó hosszú nyomva tartása nyitja az admin belépést -->
+      <a href="./index.html" id="brand-logo-trigger" class="brand-logo">
+        <div class="logo-badge" aria-hidden="true">MBA</div>
         <div class="brand-text">
           <span class="brand-name">MOZSÓ</span>
-          <span class="brand-sub">BIZOMÁNYOS AUTÓK</span>
+          <span class="brand-sub">Bizományos Autók</span>
         </div>
       </a>
 
-      <!-- Header Actions -->
-      <div class="header-actions">
-      </div>
+      <div class="header-actions" id="header-actions"></div>
 
     </div>
   </header>
 
-  <!-- Main Content Wrapper -->
   <main class="main-wrapper">
-    
-    <!-- Hero Header -->
+
+    <!-- Bevezető -->
     <section class="hero-header">
-      <h1 class="hero-title">MOZSÓ Bizományos Autók</h1>
-      <p class="hero-subtitle" id="car-count">Elérhető gépjárműveink gyűjteménye</p>
+      <span class="hero-eyebrow">Aktuális kínálat</span>
+      <h1 class="hero-title">Átvizsgált gépjárművek,<br />megbízható háttérrel</h1>
+      <p class="hero-lead">
+        Minden járművünk műszaki átvizsgáláson esik át, dokumentált szervizmúlttal és
+        ellenőrzött futásteljesítménnyel kerül a kínálatba.
+      </p>
+      <p class="hero-subtitle" id="car-count" role="status" aria-live="polite">Kínálat betöltése...</p>
     </section>
 
-    <!-- Mobile Collapsible Filter Bar (Visible on mobile <= 1024px) -->
+    <!-- Mobil szűrősáv (1024px alatt) -->
     <div id="mobile-filter-container" class="mobile-filter-container"></div>
 
-    <!-- Two-Column Layout (Desktop Sidebar Filter + Car Grid) -->
     <div class="content-layout">
-      
-      <!-- Desktop Sidebar Filter Container -->
-      <aside id="desktop-filter-container" class="desktop-filter-wrap"></aside>
 
-      <!-- Car Grid Container -->
+      <!-- Asztali oldalsáv -->
+      <aside id="desktop-filter-container" class="desktop-filter-wrap" aria-label="Szűrők"></aside>
+
       <section class="car-grid-container">
-        <div id="cars-grid" class="car-grid">
-          <!-- Car tiles rendered dynamically via JS -->
-        </div>
+        <div id="cars-grid" class="car-grid"></div>
 
-        <!-- Empty State Container -->
-        <div id="empty-state" class="empty-state" style="display: none;">
-          <div class="empty-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <!-- Nincs találat -->
+        <div id="empty-state" class="state-panel" hidden>
+          <div class="state-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <h3 class="empty-title">Nincs találat a megadott szűrők alapján</h3>
-          <p class="empty-text">Módosítsa a keresési feltételeket vagy a szűrő beállításokat a keresett jármű megtalálásához.</p>
-          <button id="btn-reset-filters" class="btn-reset-filters">Szűrők alaphelyzetbe állítása</button>
+          <h2 class="state-title" id="empty-title">Nincs találat a megadott szűrők alapján</h2>
+          <p class="state-text" id="empty-text">Módosítsa a keresési feltételeket a keresett jármű megtalálásához.</p>
+          <button type="button" id="btn-reset-filters" class="state-btn">Szűrők alaphelyzetbe állítása</button>
+        </div>
+
+        <!-- Kapcsolati hiba (nem ugyanaz, mint az üres találat) -->
+        <div id="error-state" class="state-panel state-panel-error" hidden>
+          <div class="state-icon state-icon-error">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <h2 class="state-title">A kínálat jelenleg nem érhető el</h2>
+          <p class="state-text">Átmeneti kapcsolati hiba lépett fel. Kérjük, próbálja meg újra, vagy keressen minket telefonon.</p>
+          <button type="button" id="btn-retry-load" class="state-btn">Újrapróbálkozás</button>
         </div>
       </section>
 
@@ -78,33 +112,28 @@
 
   </main>
 
-  <!-- Floating Back to Top Button -->
-  <button id="btn-scroll-top" class="btn-scroll-top" aria-label="Görgetés az oldal tetejére" title="Ugrás az oldal tetejére">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <button id="btn-scroll-top" class="btn-scroll-top" aria-label="Ugrás az oldal tetejére">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <polyline points="18 15 12 9 6 15"></polyline>
     </svg>
   </button>
 
-  <!-- Footer -->
   <footer class="site-footer">
     <div class="footer-container">
       <div class="footer-copy">&copy; 2026 MOZSÓ Bizományos Autók. Minden jog fenntartva.</div>
-      <div class="footer-links">
-        <a href="./adatkezeles.html" target="_blank">Adatkezelési Tájékoztató</a>
-        <span class="footer-separator">•</span>
-        <a href="./impresszum.html" target="_blank">Impresszum</a>
-        <span class="footer-separator">•</span>
-        <a href="./aszf.html" target="_blank">ÁSZF</a>
-      </div>
-      <div class="footer-dev">
-        Designed and developed by: 
-        <a href="mailto:avar.szilveszter@gmail.com" class="dev-link">SA Software & Network Solutions</a>
-      </div>
+      <nav class="footer-links" aria-label="Jogi információk">
+        <a href="./adatkezeles.html">Adatkezelési tájékoztató</a>
+        <span class="footer-separator" aria-hidden="true">•</span>
+        <a href="./impresszum.html">Impresszum</a>
+        <span class="footer-separator" aria-hidden="true">•</span>
+        <a href="./aszf.html">ÁSZF</a>
+      </nav>
+      <p class="footer-dev">
+        Fejlesztés: <a href="mailto:avar.szilveszter@gmail.com" class="dev-link">SA Software &amp; Network Solutions</a>
+      </p>
     </div>
   </footer>
 
-  <!-- App Entry Script -->
   <script type="module" src="./src/js/app.js"></script>
 </body>
 </html>
-

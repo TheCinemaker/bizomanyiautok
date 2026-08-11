@@ -1,4 +1,5 @@
-/* Luxury Car Tile / Card Styles */
+/* Autó kártyák */
+
 .car-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-light);
@@ -12,116 +13,133 @@
   position: relative;
 }
 
-.car-card:hover {
+.car-card:hover,
+.car-card:focus-visible {
   transform: translateY(-4px);
   box-shadow: var(--shadow-card-hover);
   border-color: var(--border-hover);
 }
 
-/* Image Container with Dark Fit */
+/* Fotó
+   Korábban `contain` volt sötét háttéren, amitől szinte minden kártyán vastag
+   fekete sáv futott a kép mellett - egy világos oldalon ez befejezetlennek hat
+   és széttöri a rács ritmusát. A rácsban ezért egységes kivágás van; a teljes,
+   vágatlan fotó a részletek nézetben látható. */
 .car-card-media {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  background: #0F172A;
+  background: var(--bg-photo);
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .car-card-image {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* Full car photo fits inside without cropping */
-  background: #0F172A;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .car-card:hover .car-card-image {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
-/* Tag Badges on Media */
-.car-card-badge {
+/* Finom sötétedés alul, hogy a jelvények mindig olvashatók legyenek */
+.car-card-media::after {
+  content: '';
   position: absolute;
-  top: 14px;
-  right: 14px;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #FFFFFF;
-  font-size: 0.725rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 5;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.18) 0%, rgba(15, 23, 42, 0) 32%);
+  pointer-events: none;
 }
 
+.car-card-badge,
 .car-card-year {
   position: absolute;
   top: 14px;
+  z-index: 5;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.3px;
+}
+
+.car-card-badge {
+  right: 14px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.car-card-year {
   left: 14px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: var(--text-primary);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-light);
-  z-index: 5;
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
-/* Card Body */
+/* Kártyatörzs */
 .car-card-body {
-  padding: 20px 20px 18px 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.car-card-header {
-  margin-bottom: 8px;
-}
-
 .car-card-title {
   font-family: var(--font-heading);
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.3;
   margin-bottom: 4px;
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Engine Specs Line */
 .car-card-engine {
   font-size: 0.85rem;
   color: var(--text-secondary);
   font-weight: 500;
-  letter-spacing: -0.1px;
+}
+
+.car-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.car-card-meta-item {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
 }
 
 .car-card-divider {
   height: 1px;
   background: var(--border-light);
   margin: 16px 0;
-  width: 100%;
 }
 
-/* Footer & Arrow Button */
 .car-card-footer {
   margin-top: auto;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
 }
@@ -129,10 +147,11 @@
 .car-card-price-group {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .car-card-price-label {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-muted);
@@ -141,12 +160,14 @@
 
 .car-card-price {
   font-family: var(--font-heading);
-  font-size: 1.25rem;
+  font-size: 1.28rem;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1.2;
 }
 
+/* Nem gomb, hanem díszítés: a kattintható elem maga a kártya,
+   így nincs beágyazott interaktív elem és a billentyűzet is egyértelmű. */
 .car-card-arrow-btn {
   width: 40px;
   height: 40px;
@@ -157,15 +178,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
   flex-shrink: 0;
+  transition: all var(--transition-fast);
 }
 
-.car-card:hover .car-card-arrow-btn {
+.car-card:hover .car-card-arrow-btn,
+.car-card:focus-visible .car-card-arrow-btn {
   background: var(--accent-dark);
   color: var(--text-inverse);
   border-color: var(--accent-dark);
-  transform: translateX(2px);
 }
 
 .car-card-arrow-icon {
