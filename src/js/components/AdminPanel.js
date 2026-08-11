@@ -335,7 +335,14 @@ export class AdminPanel {
                 <h3 class="inquiries-title">Beérkezett Vevői Érdeklődések (Valós idejű / Realtime)</h3>
                 <p class="inquiries-subtitle">Az új megkeresések azonnal, csengőszóval jelennek meg a felületen.</p>
               </div>
-              <button type="button" class="btn-refresh-inquiries" id="btn-refresh-inquiries">🔄 Frissítés</button>
+              <button type="button" class="btn-refresh-inquiries" id="btn-refresh-inquiries">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span>Frissítés</span>
+              </button>
             </div>
             <div id="admin-inquiries-list-container"></div>
           </div>
@@ -824,7 +831,7 @@ export class AdminPanel {
       if (payload.eventType === 'INSERT') {
         this.playNotificationChime();
         const newInquiry = payload.new;
-        showToast(`🔔 ÚJ ÉRDEKLŐDÉS: ${newInquiry.name} (${newInquiry.car_label || 'Autó'})!`, 'info');
+        showToast(`ÚJ ÉRDEKLŐDÉS: ${newInquiry.name} (${newInquiry.car_label || 'Autó'})`, 'info');
       }
       this.updateInquiryBadge();
       const inquiriesTab = document.getElementById('tab-inquiries');
@@ -878,13 +885,19 @@ export class AdminPanel {
             <div class="inquiry-card ${item.handled ? 'is-handled' : 'is-new'}">
               <div class="inquiry-card-header">
                 <span class="inquiry-badge ${item.handled ? 'handled' : 'new'}">
-                  ${item.handled ? '✓ Elintézve' : '🔴 ÚJ ÉRDEKLŐDÉS'}
+                  <span class="status-dot"></span>
+                  ${item.handled ? 'Elintézve' : 'ÚJ ÉRDEKLŐDÉS'}
                 </span>
                 <span class="inquiry-date">${new Date(item.created_at).toLocaleString('hu-HU', { dateStyle: 'medium', timeStyle: 'short' })}</span>
               </div>
 
               <div class="inquiry-car-label">
-                🚘 <strong>${escapeHtml(item.car_label || 'Gépjármű érdeklődés')}</strong>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A2 2 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+                  <circle cx="7" cy="17" r="2"></circle>
+                  <circle cx="17" cy="17" r="2"></circle>
+                </svg>
+                <strong>${escapeHtml(item.car_label || 'Gépjármű érdeklődés')}</strong>
               </div>
 
               <div class="inquiry-customer-grid">
@@ -895,14 +908,21 @@ export class AdminPanel {
                 <div class="inquiry-customer-item">
                   <span class="inquiry-label">Telefonszám</span>
                   <a href="tel:${escapeHtml(item.phone.replace(/[^\d+]/g, ''))}" class="inquiry-phone-btn">
-                    📞 ${escapeHtml(item.phone)} (Hívás)
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    <span>${escapeHtml(item.phone)} (Hívás)</span>
                   </a>
                 </div>
                 ${item.email ? `
                   <div class="inquiry-customer-item">
                     <span class="inquiry-label">E-mail Cím</span>
                     <a href="mailto:${escapeHtml(item.email)}" class="inquiry-email-btn">
-                      ✉️ ${escapeHtml(item.email)}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                      <span>${escapeHtml(item.email)}</span>
                     </a>
                   </div>
                 ` : ''}
@@ -916,10 +936,17 @@ export class AdminPanel {
 
               <div class="inquiry-card-footer">
                 <button type="button" class="btn-toggle-handled ${item.handled ? 'is-handled-btn' : ''}" data-handled-id="${item.id}" data-current-state="${item.handled}">
-                  ${item.handled ? 'Visszaállítás Új állapotba' : '✓ Megjelölés elintézettként'}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>${item.handled ? 'Visszaállítás Új állapotba' : 'Megjelölés elintézettként'}</span>
                 </button>
                 <button type="button" class="btn-delete-inquiry" data-delete-inquiry-id="${item.id}">
-                  🗑️ Törlés
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Törlés</span>
                 </button>
               </div>
             </div>

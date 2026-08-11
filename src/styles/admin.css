@@ -847,10 +847,21 @@
 }
 
 .inquiry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.75rem;
   font-weight: 800;
   padding: 4px 10px;
   border-radius: var(--radius-full);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .inquiry-badge.new {
