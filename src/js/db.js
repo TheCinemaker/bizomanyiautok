@@ -276,6 +276,63 @@ class DataService {
     }
     return true;
   }
+
+  async getInquiries() {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
+
+    const { data, error } = await this.supabase
+      .from('inquiries')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw this.describeWriteError(error);
+    return data || [];
+  }
+
+  async toggleInquiryHandled(id, handled) {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
+
+    const { data, error } = await this.supabase
+      .from('inquiries')
+      .update({ handled })
+      .eq('id', id)
+      .select();
+
+    if (error) throw this.describeWriteError(error);
+    return data ? data[0] : null;
+  }
+
+  async deleteInquiry(id) {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
+
+    const { error } = await this.supabase
+      .from('inquiries')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw this.describeWriteError(error);
+    return true;
+  }
+
+  subscribeInquiries(callback) {
+    if (!this.supabase) return null;
+
+    return this.supabase
+      .channel('realtime-inquiries-channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'inquiries' },
+        (payload) => {
+          if (typeof callback === 'function') {
+            callback(payload);
+          }
+        }
+      )
+      .subscribe();
+  }
 }
 
 export const dbService = new DataService();

@@ -217,6 +217,9 @@ export class AdminPanel {
         <div class="admin-tabs" role="tablist">
           <button type="button" class="admin-tab-btn active" data-tab="tab-add-car" role="tab" aria-selected="true">Autó felvitele</button>
           <button type="button" class="admin-tab-btn" data-tab="tab-manage-cars" role="tab" aria-selected="false">Készlet kezelése</button>
+          <button type="button" class="admin-tab-btn" data-tab="tab-inquiries" role="tab" aria-selected="false">
+            Érdeklődések <span id="inquiries-tab-badge" class="inquiries-tab-badge" hidden>0</span>
+          </button>
         </div>
 
         <div class="admin-body">
@@ -325,6 +328,17 @@ export class AdminPanel {
           <div id="tab-manage-cars" class="admin-tab-content" hidden>
             <div id="admin-cars-table-container"></div>
           </div>
+
+          <div id="tab-inquiries" class="admin-tab-content" hidden>
+            <div class="inquiries-header-bar">
+              <div>
+                <h3 class="inquiries-title">Beérkezett Vevői Érdeklődések (Valós idejű / Realtime)</h3>
+                <p class="inquiries-subtitle">Az új megkeresések azonnal, csengőszóval jelennek meg a felületen.</p>
+              </div>
+              <button type="button" class="btn-refresh-inquiries" id="btn-refresh-inquiries">🔄 Frissítés</button>
+            </div>
+            <div id="admin-inquiries-list-container"></div>
+          </div>
         </div>
       </div>
     `;
@@ -366,6 +380,7 @@ export class AdminPanel {
         });
 
         if (targetId === 'tab-manage-cars') this.renderManageCarsTable();
+        if (targetId === 'tab-inquiries') this.renderInquiriesList();
       });
     });
 
@@ -768,6 +783,195 @@ export class AdminPanel {
     });
   }
 
+  // ---------------------------------------------------- Érdeklődések (Realtime) ----
+
+  playNotificationChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
+      gain1.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + 0.3);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(987.77, ctx.currentTime + 0.15);
+      gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.15);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(ctx.currentTime + 0.15);
+      osc2.stop(ctx.currentTime + 0.6);
+    } catch (e) {
+      // AudioContext ok
+    }
+  }
+
+  setupInquiryRealtime() {
+    if (this.realtimeChannel) return;
+
+    this.realtimeChannel = dbService.subscribeInquiries((payload) => {
+      if (payload.eventType === 'INSERT') {
+        this.playNotificationChime();
+        const newInquiry = payload.new;
+        showToast(`🔔 ÚJ ÉRDEKLŐDÉS: ${newInquiry.name} (${newInquiry.car_label || 'Autó'})!`, 'info');
+      }
+      this.updateInquiryBadge();
+      const inquiriesTab = document.getElementById('tab-inquiries');
+      if (inquiriesTab && !inquiriesTab.hidden) {
+        this.renderInquiriesList();
+      }
+    });
+  }
+
+  async updateInquiryBadge() {
+    const badge = document.getElementById('inquiries-tab-badge');
+    if (!badge) return;
+
+    try {
+      const inquiries = await dbService.getInquiries();
+      const unhandledCount = inquiries.filter(i => !i.handled).length;
+      if (unhandledCount > 0) {
+        badge.textContent = unhandledCount;
+        badge.hidden = false;
+      } else {
+        badge.hidden = true;
+      }
+    } catch {
+      badge.hidden = true;
+    }
+  }
+
+  async renderInquiriesList() {
+    const container = document.getElementById('admin-inquiries-list-container');
+    if (!container) return;
+
+    container.innerHTML = `<p style="padding:20px; text-align:center; color:var(--text-muted);">Érdeklődések betöltése...</p>`;
+
+    try {
+      const inquiries = await dbService.getInquiries();
+      this.updateInquiryBadge();
+
+      if (!inquiries || inquiries.length === 0) {
+        container.innerHTML = `<div class="empty-inquiries"><p style="padding:32px; text-align:center; color:var(--text-muted);">Még nem érkezett egyetlen érdeklődés sem.</p></div>`;
+        return;
+      }
+
+      const refreshBtn = document.getElementById('btn-refresh-inquiries');
+      if (refreshBtn) {
+        refreshBtn.onclick = () => this.renderInquiriesList();
+      }
+
+      container.innerHTML = `
+        <div class="inquiry-card-list">
+          ${inquiries.map(item => `
+            <div class="inquiry-card ${item.handled ? 'is-handled' : 'is-new'}">
+              <div class="inquiry-card-header">
+                <span class="inquiry-badge ${item.handled ? 'handled' : 'new'}">
+                  ${item.handled ? '✓ Elintézve' : '🔴 ÚJ ÉRDEKLŐDÉS'}
+                </span>
+                <span class="inquiry-date">${new Date(item.created_at).toLocaleString('hu-HU', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+              </div>
+
+              <div class="inquiry-car-label">
+                🚘 <strong>${escapeHtml(item.car_label || 'Gépjármű érdeklődés')}</strong>
+              </div>
+
+              <div class="inquiry-customer-grid">
+                <div class="inquiry-customer-item">
+                  <span class="inquiry-label">Vevő Neve</span>
+                  <strong class="inquiry-val">${escapeHtml(item.name)}</strong>
+                </div>
+                <div class="inquiry-customer-item">
+                  <span class="inquiry-label">Telefonszám</span>
+                  <a href="tel:${escapeHtml(item.phone.replace(/[^\d+]/g, ''))}" class="inquiry-phone-btn">
+                    📞 ${escapeHtml(item.phone)} (Hívás)
+                  </a>
+                </div>
+                ${item.email ? `
+                  <div class="inquiry-customer-item">
+                    <span class="inquiry-label">E-mail Cím</span>
+                    <a href="mailto:${escapeHtml(item.email)}" class="inquiry-email-btn">
+                      ✉️ ${escapeHtml(item.email)}
+                    </a>
+                  </div>
+                ` : ''}
+              </div>
+
+              ${item.message ? `
+                <div class="inquiry-message">
+                  <strong>Vevő Üzenete:</strong> "${escapeHtml(item.message)}"
+                </div>
+              ` : ''}
+
+              <div class="inquiry-card-footer">
+                <button type="button" class="btn-toggle-handled ${item.handled ? 'is-handled-btn' : ''}" data-handled-id="${item.id}" data-current-state="${item.handled}">
+                  ${item.handled ? 'Visszaállítás Új állapotba' : '✓ Megjelölés elintézettként'}
+                </button>
+                <button type="button" class="btn-delete-inquiry" data-delete-inquiry-id="${item.id}">
+                  🗑️ Törlés
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      // Event listeners
+      container.querySelectorAll('[data-handled-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.handledId;
+          const currentState = btn.dataset.currentState === 'true';
+          btn.disabled = true;
+          try {
+            await dbService.toggleInquiryHandled(id, !currentState);
+            showToast(currentState ? 'Érdeklődés újként megjelölve.' : 'Érdeklődés elintézve.', 'success');
+            this.renderInquiriesList();
+          } catch (err) {
+            showToast(err.message, 'error');
+            btn.disabled = false;
+          }
+        });
+      });
+
+      container.querySelectorAll('[data-delete-inquiry-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.deleteInquiryId;
+          const confirmed = await confirmAction({
+            title: 'Érdeklődés törlése',
+            message: 'Biztosan törlöd ezt az érdeklődést? A művelet nem vonható vissza.',
+            confirmLabel: 'Igen, törlöm'
+          });
+          if (!confirmed) return;
+
+          btn.disabled = true;
+          try {
+            await dbService.deleteInquiry(id);
+            showToast('Érdeklődés törölve.', 'success');
+            this.renderInquiriesList();
+          } catch (err) {
+            showToast(err.message, 'error');
+            btn.disabled = false;
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error('Érdeklődések betöltési hiba:', err);
+      container.innerHTML = `<p style="padding:20px; text-align:center; color:var(--accent-danger);">${escapeHtml(err.message)}</p>`;
+    }
+  }
+
   // ------------------------------------------------------------ Nyit/zár ----
 
   openAdminModal() {
@@ -780,6 +984,9 @@ export class AdminPanel {
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
 
+    this.updateInquiryBadge();
+    this.setupInquiryRealtime();
+
     this.releaseFocusTrap = trapFocus(overlay.querySelector('.admin-container'));
   }
 
@@ -789,6 +996,11 @@ export class AdminPanel {
 
     overlay.classList.remove('active');
     document.body.style.overflow = '';
+
+    if (this.realtimeChannel) {
+      dbService.supabase?.removeChannel(this.realtimeChannel);
+      this.realtimeChannel = null;
+    }
 
     if (this.releaseFocusTrap) {
       this.releaseFocusTrap();

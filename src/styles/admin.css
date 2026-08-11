@@ -761,3 +761,210 @@
     padding: 10px;
   }
 }
+
+/* Inquiries Tab Realtime Styles */
+.inquiries-tab-badge {
+  background: var(--accent-danger);
+  color: var(--text-inverse);
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: var(--radius-full);
+  padding: 2px 7px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.inquiries-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.inquiries-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.inquiries-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.btn-refresh-inquiries {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-refresh-inquiries:hover {
+  background: var(--bg-surface);
+  border-color: var(--border-hover);
+}
+
+.inquiry-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inquiry-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inquiry-card.is-new {
+  border-left: 4px solid var(--accent-danger);
+  background: #FFFBFB;
+}
+
+.inquiry-card.is-handled {
+  opacity: 0.7;
+  border-left: 4px solid var(--accent-success);
+}
+
+.inquiry-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inquiry-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.inquiry-badge.new {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--accent-danger);
+}
+
+.inquiry-badge.handled {
+  background: rgba(34, 197, 94, 0.15);
+  color: #166534;
+}
+
+.inquiry-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.inquiry-car-label {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.inquiry-customer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  background: var(--bg-surface);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.inquiry-customer-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inquiry-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.inquiry-phone-btn {
+  color: var(--accent-dark);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.inquiry-phone-btn:hover {
+  color: var(--accent-gold);
+  text-decoration: underline;
+}
+
+.inquiry-email-btn {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.inquiry-message {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--accent-gold);
+  line-height: 1.5;
+}
+
+.inquiry-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-light);
+}
+
+.btn-toggle-handled {
+  padding: 8px 16px;
+  background: var(--accent-dark);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-toggle-handled.is-handled-btn {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+}
+
+.btn-delete-inquiry {
+  padding: 8px 14px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 0.825rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-delete-inquiry:hover {
+  background: var(--accent-danger);
+  color: var(--text-inverse);
+}

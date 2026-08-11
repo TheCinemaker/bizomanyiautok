@@ -192,6 +192,23 @@ CREATE POLICY "inquiries_admin_update" ON public.inquiries
 CREATE POLICY "inquiries_admin_delete" ON public.inquiries
     FOR DELETE TO authenticated USING (public.is_admin());
 
+-- ----------------------------------------------------------------------------
+-- 7. Realtime engedélyezése az érdeklődések táblára
+-- ----------------------------------------------------------------------------
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'inquiries'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.inquiries;
+  END IF;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Ha a publikáció nem létezik vagy nincs jogosultság, ne álljon le a telepítő
+    NULL;
+END $$;
+
 
 -- ============================================================================
 -- TEENDŐ A FUTTATÁS UTÁN
