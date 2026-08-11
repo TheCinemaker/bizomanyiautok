@@ -4,6 +4,9 @@ import { INITIAL_CARS } from '../data/initialCars.js';
 const STORAGE_KEY = 'apex_motors_cars';
 const SUPABASE_CONFIG_KEY = 'apex_motors_supabase_config';
 
+const DEFAULT_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qceznytdsqdcodgrgoxd.supabase.co';
+const DEFAULT_SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjZXpueXRkc3FkY29kZ3Jnb3hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MTc5NjgsImV4cCI6MjEwMTk5Mzk2OH0.9G0LFIdQ_l447QQLx7hLgEhfPYayZCPYJ11Y1fSr1eE';
+
 class DataService {
   constructor() {
     this.supabase = null;
@@ -14,10 +17,14 @@ class DataService {
   getSupabaseConfig() {
     try {
       const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
-      return saved ? JSON.parse(saved) : { url: '', key: '' };
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.url && parsed.key) return parsed;
+      }
     } catch (e) {
-      return { url: '', key: '' };
+      // ignore
     }
+    return { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_KEY };
   }
 
   initSupabase() {
@@ -84,7 +91,6 @@ class DataService {
 
         if (error) throw error;
         if (data && data[0]) {
-          // Also sync to local storage
           this.addLocalCar(data[0]);
           return data[0];
         }
