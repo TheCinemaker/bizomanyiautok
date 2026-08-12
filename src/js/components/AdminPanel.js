@@ -64,6 +64,14 @@ export class AdminPanel {
       }
     });
 
+    const footerAdminLink = document.getElementById('footer-admin-link');
+    if (footerAdminLink) {
+      footerAdminLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.requestAccess();
+      });
+    }
+
     logoEl.addEventListener('mousedown', startPress);
     logoEl.addEventListener('mouseup', cancelPress);
     logoEl.addEventListener('mouseleave', cancelPress);
