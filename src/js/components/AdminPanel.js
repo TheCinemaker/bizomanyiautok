@@ -1110,6 +1110,13 @@ export class AdminPanel {
           </button>
         </div>
 
+        <div class="modal-back-bar">
+          <button type="button" class="btn-back-to-admin" id="service-back-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Vissza az admin panelre
+          </button>
+        </div>
+
         <div class="admin-body">
           <div class="service-add-box">
             <h4 class="service-form-title">Új szervizbejegyzés / javítás felvitele</h4>
@@ -1149,10 +1156,9 @@ export class AdminPanel {
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    overlay.querySelector('#service-close-btn').onclick = () => {
-      overlay.remove();
-      // Az admin panel még nyitva van mögötte, ne állítsuk vissza az overflow-t
-    };
+    const closeOverlay = () => overlay.remove();
+    overlay.querySelector('#service-close-btn').onclick = closeOverlay;
+    overlay.querySelector('#service-back-btn').onclick = closeOverlay;
 
     const renderLogs = async () => {
       const listEl = overlay.querySelector('#service-history-list');
@@ -1249,6 +1255,13 @@ export class AdminPanel {
           </div>
           <button type="button" class="modal-close-btn" id="contract-close-btn" aria-label="Bezárás">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="modal-back-bar">
+          <button type="button" class="btn-back-to-admin" id="contract-back-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Vissza az admin panelre
           </button>
         </div>
 
@@ -1371,6 +1384,8 @@ export class AdminPanel {
                   <label class="form-label">1. Tanú Lakcíme</label>
                   <input type="text" id="c-w1-addr" class="form-input" placeholder="Lakcím..." />
                 </div>
+              </div>
+              <div class="form-grid" style="margin-top:8px;">
                 <div>
                   <label class="form-label">2. Tanú Neve</label>
                   <input type="text" id="c-w2-name" class="form-input" placeholder="Név..." />
@@ -1399,10 +1414,9 @@ export class AdminPanel {
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    overlay.querySelector('#contract-close-btn').onclick = () => {
-      overlay.remove();
-      // Az admin panel még nyitva van mögötte, ne állítsuk vissza az overflow-t
-    };
+    const closeContractOverlay = () => overlay.remove();
+    overlay.querySelector('#contract-close-btn').onclick = closeContractOverlay;
+    overlay.querySelector('#contract-back-btn').onclick = closeContractOverlay;
 
     const generatePrintHTML = () => {
       const getVal = (id) => overlay.querySelector(`#${id}`)?.value || '';
