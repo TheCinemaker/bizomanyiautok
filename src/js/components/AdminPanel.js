@@ -1151,7 +1151,7 @@ export class AdminPanel {
 
     overlay.querySelector('#service-close-btn').onclick = () => {
       overlay.remove();
-      document.body.style.overflow = '';
+      // Az admin panel még nyitva van mögötte, ne állítsuk vissza az overflow-t
     };
 
     const renderLogs = async () => {
@@ -1401,7 +1401,7 @@ export class AdminPanel {
 
     overlay.querySelector('#contract-close-btn').onclick = () => {
       overlay.remove();
-      document.body.style.overflow = '';
+      // Az admin panel még nyitva van mögötte, ne állítsuk vissza az overflow-t
     };
 
     const generatePrintHTML = () => {
