@@ -121,6 +121,7 @@ export class CarModal {
         <div class="specs-grid">
           ${this.specBox('Évjárat', car.year)}
           ${this.specBox('Futásteljesítmény', formatMileage(car.mileage))}
+          ${this.specBox('Műszaki érvényessége', car.inspection_validity)}
           ${this.specBox('Hengerűrtartalom', car.displacement ? car.displacement.toLocaleString('hu-HU') + ' cm³' : null)}
           ${this.specBox('Teljesítmény', car.power ? car.power + ' LE' : null)}
           ${this.specBox('Üzemanyag', car.fuel)}

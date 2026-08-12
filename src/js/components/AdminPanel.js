@@ -283,6 +283,10 @@ export class AdminPanel {
                   <input type="text" id="add-color" class="form-input" placeholder="pl. Nardo szürke" maxlength="60" />
                 </div>
                 <div>
+                  <label class="form-label" for="add-inspection">Műszaki érvényesség</label>
+                  <input type="text" id="add-inspection" class="form-input" placeholder="pl. 2026.11.20" maxlength="30" />
+                </div>
+                <div>
                   <label class="form-label" for="add-condition">Állapot</label>
                   <select id="add-condition" class="form-select">
                     <option value="Újszerű">Újszerű</option>
@@ -603,6 +607,7 @@ export class AdminPanel {
         fuel: $('add-fuel').value,
         transmission: $('add-trans').value,
         color: $('add-color').value.trim() || null,
+        inspection_validity: $('add-inspection').value.trim() || null,
         condition: $('add-condition').value,
         description: $('add-description').value.trim() || null,
         images: imageUrls
@@ -664,6 +669,7 @@ export class AdminPanel {
     $('add-fuel').value = car.fuel || 'Benzin';
     $('add-trans').value = car.transmission || 'Automata';
     $('add-color').value = car.color || '';
+    $('add-inspection').value = car.inspection_validity || '';
     $('add-condition').value = car.condition || 'Kitűnő';
     $('add-description').value = car.description || '';
 
@@ -733,6 +739,22 @@ export class AdminPanel {
                 <div class="admin-car-price">${escapeHtml(formatCurrency(car.price))}</div>
               </div>
               <div class="admin-car-actions">
+                <button type="button" class="btn-service-log" data-service-id="${escapeHtml(car.id)}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                  </svg>
+                  <span>Szerviznapló</span>
+                </button>
+                <button type="button" class="btn-generate-contract" data-contract-id="${escapeHtml(car.id)}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  <span>Adásvételi</span>
+                </button>
                 <button type="button" class="btn-edit-car" data-edit-id="${escapeHtml(car.id)}">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -753,6 +775,20 @@ export class AdminPanel {
         }).join('')}
       </div>
     `;
+
+    container.querySelectorAll('[data-service-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const car = cars.find(c => c.id === btn.dataset.serviceId);
+        if (car) this.openServiceLogModal(car);
+      });
+    });
+
+    container.querySelectorAll('[data-contract-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const car = cars.find(c => c.id === btn.dataset.contractId);
+        if (car) this.openContractGeneratorModal(car);
+      });
+    });
 
     container.querySelectorAll('[data-edit-id]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1001,37 +1037,481 @@ export class AdminPanel {
 
   // ------------------------------------------------------------ Nyit/zár ----
 
-  openAdminModal() {
-    const overlay = document.getElementById('admin-dashboard-modal');
-    if (!overlay) return;
+  // -------------------------------------------------------- Szerviznapló Modal ----
 
-    const emailEl = overlay.querySelector('#admin-user-email');
-    if (emailEl) emailEl.textContent = this.currentUser?.email || '';
+  async openServiceLogModal(car) {
+    let overlay = document.getElementById('service-log-modal');
+    if (overlay) overlay.remove();
 
-    overlay.classList.add('active');
+    overlay = document.createElement('div');
+    overlay.id = 'service-log-modal';
+    overlay.className = 'admin-modal-overlay active';
+    overlay.innerHTML = `
+      <div class="admin-container service-log-container" role="dialog" aria-modal="true">
+        <div class="admin-header">
+          <div class="admin-title-wrap">
+            <span class="admin-badge">Belső irodai nyilvántartás</span>
+            <h2 class="admin-title">Szerviz- és Javítási Napló</h2>
+            <p class="inquiries-subtitle">${escapeHtml(car.make)} ${escapeHtml(car.model)} (${escapeHtml(formatCurrency(car.price))})</p>
+          </div>
+          <button type="button" class="modal-close-btn" id="service-close-btn" aria-label="Bezárás">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="admin-body">
+          <div class="service-add-box">
+            <h4 class="service-form-title">Új szervizbejegyzés / javítás felvitele</h4>
+            <form id="service-log-form">
+              <div class="form-grid">
+                <div>
+                  <label class="form-label" for="s-date">Dátum *</label>
+                  <input type="date" id="s-date" class="form-input" required value="${new Date().toISOString().split('T')[0]}" />
+                </div>
+                <div>
+                  <label class="form-label" for="s-cost">Költség (Ft)</label>
+                  <input type="number" id="s-cost" class="form-input" placeholder="0" min="0" step="500" />
+                </div>
+                <div>
+                  <label class="form-label" for="s-performed">Végrehajtotta / Szerviz</label>
+                  <input type="text" id="s-performed" class="form-input" placeholder="pl. Iroda / Szerviz" maxlength="80" />
+                </div>
+                <div class="form-group-full">
+                  <label class="form-label" for="s-desc">Javítás / Elvégzett munka / Hiányosság *</label>
+                  <textarea id="s-desc" class="form-textarea" rows="2" required placeholder="pl. Olajcsere, légszűrő, fékbetét cserélve, bal első lökös karcos..."></textarea>
+                </div>
+                <div class="form-group-full">
+                  <button type="submit" class="pin-submit-btn">Bejegyzés mentése</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <h4 class="service-history-title">Előző javítások és szerviztörténet</h4>
+          <div id="service-history-list">
+            <p style="padding:15px; text-align:center; color:var(--text-muted);">Szerviznapló betöltése...</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    this.updateInquiryBadge();
-    this.setupInquiryRealtime();
+    overlay.querySelector('#service-close-btn').onclick = () => {
+      overlay.remove();
+      document.body.style.overflow = '';
+    };
 
-    this.releaseFocusTrap = trapFocus(overlay.querySelector('.admin-container'));
+    const renderLogs = async () => {
+      const listEl = overlay.querySelector('#service-history-list');
+      try {
+        const logs = await dbService.getServiceLogs(car.id);
+        if (logs.length === 0) {
+          listEl.innerHTML = `<p style="padding:20px; text-align:center; color:var(--text-muted);">Még nincs szervizbejegyzés ehhez az autóhoz.</p>`;
+          return;
+        }
+
+        const totalCost = logs.reduce((sum, item) => sum + (Number(item.cost) || 0), 0);
+
+        listEl.innerHTML = `
+          <div class="service-total-bar">
+            <span>Összes ráfordított szervizköltség:</span>
+            <strong>${formatCurrency(totalCost)}</strong>
+          </div>
+          <div class="service-log-items">
+            ${logs.map(log => `
+              <div class="service-log-item">
+                <div class="service-log-main">
+                  <div class="service-log-date-row">
+                    <span class="service-log-date">${log.service_date || ''}</span>
+                    ${log.cost ? `<span class="service-log-cost">${formatCurrency(log.cost)}</span>` : ''}
+                  </div>
+                  <div class="service-log-desc">${escapeHtml(log.description)}</div>
+                  ${log.performed_by ? `<div class="service-log-by">Végrehajtotta: ${escapeHtml(log.performed_by)}</div>` : ''}
+                </div>
+                <button type="button" class="btn-delete-service-item" data-del-log="${log.id}">Törlés</button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+
+        listEl.querySelectorAll('[data-del-log]').forEach(btn => {
+          btn.onclick = async () => {
+            if (!confirm('Biztosan törlöd ezt a szervizbejegyzést?')) return;
+            try {
+              await dbService.deleteServiceLog(btn.dataset.delLog);
+              showToast('Bejegyzés törölve.', 'success');
+              renderLogs();
+            } catch (err) {
+              showToast(err.message, 'error');
+            }
+          };
+        });
+
+      } catch (err) {
+        listEl.innerHTML = `<p style="padding:15px; color:var(--accent-danger);">${escapeHtml(err.message)}</p>`;
+      }
+    };
+
+    renderLogs();
+
+    overlay.querySelector('#service-log-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const desc = overlay.querySelector('#s-desc').value.trim();
+      if (!desc) return;
+
+      try {
+        await dbService.addServiceLog({
+          car_id: car.id,
+          service_date: overlay.querySelector('#s-date').value,
+          description: desc,
+          cost: Number(overlay.querySelector('#s-cost').value) || 0,
+          performed_by: overlay.querySelector('#s-performed').value.trim() || null
+        });
+        showToast('Szervizbejegyzés mentve.', 'success');
+        overlay.querySelector('#s-desc').value = '';
+        overlay.querySelector('#s-cost').value = '';
+        renderLogs();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
   }
 
-  closeAdminModal() {
-    const overlay = document.getElementById('admin-dashboard-modal');
-    if (!overlay) return;
+  // ------------------------------------ Hivatalos Adásvételi Generáló Modal ----
 
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
+  openContractGeneratorModal(car) {
+    let overlay = document.getElementById('contract-modal');
+    if (overlay) overlay.remove();
 
-    if (this.realtimeChannel) {
-      dbService.supabase?.removeChannel(this.realtimeChannel);
-      this.realtimeChannel = null;
-    }
+    overlay = document.createElement('div');
+    overlay.id = 'contract-modal';
+    overlay.className = 'admin-modal-overlay active';
+    overlay.innerHTML = `
+      <div class="admin-container contract-modal-container" role="dialog" aria-modal="true">
+        <div class="admin-header">
+          <div class="admin-title-wrap">
+            <span class="admin-badge">Kormányablak Kompatibilis Nyomtatvány</span>
+            <h2 class="admin-title">Gépjármű Adásvételi Szerződés Generáló</h2>
+            <p class="inquiries-subtitle">Hivatalos 4 példányos nyomtatás és Supabase mentés</p>
+          </div>
+          <button type="button" class="modal-close-btn" id="contract-close-btn" aria-label="Bezárás">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
 
-    if (this.releaseFocusTrap) {
-      this.releaseFocusTrap();
-      this.releaseFocusTrap = null;
-    }
+        <div class="admin-body">
+          <form id="contract-form">
+            <!-- Jármű adatok -->
+            <div class="contract-form-section">
+              <h4 class="contract-form-sec-title">1. A Gépjármű Adatai</h4>
+              <div class="form-grid">
+                <div>
+                  <label class="form-label">Gyártmány / Típus</label>
+                  <input type="text" id="c-car-label" class="form-input" value="${escapeHtml(car.make)} ${escapeHtml(car.model)}" required />
+                </div>
+                <div>
+                  <label class="form-label">Alvázszám (VIN) *</label>
+                  <input type="text" id="c-vin" class="form-input" placeholder="pl. WBA1234567890" required maxlength="30" />
+                </div>
+                <div>
+                  <label class="form-label">Motorszám / Motorkód</label>
+                  <input type="text" id="c-engine-no" class="form-input" placeholder="pl. B48B20O1" maxlength="30" />
+                </div>
+                <div>
+                  <label class="form-label">Rendszám</label>
+                  <input type="text" id="c-plate" class="form-input" placeholder="pl. AA-BB-123" maxlength="15" />
+                </div>
+                <div>
+                  <label class="form-label">Forgalmi Engedély Száma *</label>
+                  <input type="text" id="c-reg-no" class="form-input" placeholder="pl. FE123456" required maxlength="20" />
+                </div>
+                <div>
+                  <label class="form-label">Törzskönyv Száma *</label>
+                  <input type="text" id="c-title-no" class="form-input" placeholder="pl. TK123456" required maxlength="20" />
+                </div>
+                <div>
+                  <label class="form-label">Évjárat</label>
+                  <input type="number" id="c-year" class="form-input" value="${car.year || ''}" />
+                </div>
+                <div>
+                  <label class="form-label">Kilométeróra Állás (km) *</label>
+                  <input type="number" id="c-mileage" class="form-input" value="${car.mileage || ''}" required min="0" />
+                </div>
+                <div>
+                  <label class="form-label">Vételár (Ft) *</label>
+                  <input type="number" id="c-price" class="form-input" value="${car.price || ''}" required min="0" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Eladó adatok -->
+            <div class="contract-form-section">
+              <h4 class="contract-form-sec-title">2. Eladó Adatai (Tulajdonos / Kereskedés)</h4>
+              <div class="form-grid">
+                <div>
+                  <label class="form-label">Eladó Neve / Cégnév *</label>
+                  <input type="text" id="c-seller-name" class="form-input" value="MOZSÓ Bizományos Autók" required />
+                </div>
+                <div>
+                  <label class="form-label">Születési Név / Cégjegyzékszám</label>
+                  <input type="text" id="c-seller-birthname" class="form-input" placeholder="Születési név..." />
+                </div>
+                <div>
+                  <label class="form-label">Születési Hely, Idő</label>
+                  <input type="text" id="c-seller-birthplace" class="form-input" placeholder="Budapest, 1985.05.10." />
+                </div>
+                <div>
+                  <label class="form-label">Anyja Születési Neve</label>
+                  <input type="text" id="c-seller-mother" class="form-input" placeholder="Anyja neve..." />
+                </div>
+                <div>
+                  <label class="form-label">Személyi Igazolvány / Adószám *</label>
+                  <input type="text" id="c-seller-idno" class="form-input" required placeholder="123456AB / 12345678-1-42" />
+                </div>
+                <div>
+                  <label class="form-label">Lakcím / Székhely *</label>
+                  <input type="text" id="c-seller-address" class="form-input" required placeholder="City, utca, házszám..." />
+                </div>
+              </div>
+            </div>
+
+            <!-- Vevő adatok -->
+            <div class="contract-form-section">
+              <h4 class="contract-form-sec-title">3. Vevő Adatai</h4>
+              <div class="form-grid">
+                <div>
+                  <label class="form-label">Vevő Neve / Cégnév *</label>
+                  <input type="text" id="c-buyer-name" class="form-input" required placeholder="Kovács István" />
+                </div>
+                <div>
+                  <label class="form-label">Születési Név</label>
+                  <input type="text" id="c-buyer-birthname" class="form-input" placeholder="Születési név..." />
+                </div>
+                <div>
+                  <label class="form-label">Születési Hely, Idő</label>
+                  <input type="text" id="c-buyer-birthplace" class="form-input" placeholder="Debrecen, 1990.08.12." />
+                </div>
+                <div>
+                  <label class="form-label">Anyja Születési Neve</label>
+                  <input type="text" id="c-buyer-mother" class="form-input" placeholder="Anyja neve..." />
+                </div>
+                <div>
+                  <label class="form-label">Személyi Igazolvány Száma *</label>
+                  <input type="text" id="c-buyer-idno" class="form-input" required placeholder="654321XY" />
+                </div>
+                <div>
+                  <label class="form-label">Lakcím / Székhely *</label>
+                  <input type="text" id="c-buyer-address" class="form-input" required placeholder="Város, utca, házszám..." />
+                </div>
+              </div>
+            </div>
+
+            <!-- Tanúk adatai -->
+            <div class="contract-form-section">
+              <h4 class="contract-form-sec-title">4. Tanúk Adatai (Opcionális, de kötelező az okmányirodában!)</h4>
+              <div class="form-grid">
+                <div>
+                  <label class="form-label">1. Tanú Neve</label>
+                  <input type="text" id="c-w1-name" class="form-input" placeholder="Név..." />
+                </div>
+                <div>
+                  <label class="form-label">1. Tanú Lakcíme</label>
+                  <input type="text" id="c-w1-addr" class="form-input" placeholder="Lakcím..." />
+                </div>
+                <div>
+                  <label class="form-label">2. Tanú Neve</label>
+                  <input type="text" id="c-w2-name" class="form-input" placeholder="Név..." />
+                </div>
+                <div>
+                  <label class="form-label">2. Tanú Lakcíme</label>
+                  <input type="text" id="c-w2-addr" class="form-input" placeholder="Lakcím..." />
+                </div>
+              </div>
+            </div>
+
+            <div class="contract-actions-bar">
+              <button type="button" class="pin-submit-btn" id="btn-print-contract">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Nyomtatás (Hivatalos 4 Példány)
+              </button>
+              <button type="button" class="btn-save-contract" id="btn-save-contract-db">
+                Mentés Supabase Adatbázisba
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    overlay.querySelector('#contract-close-btn').onclick = () => {
+      overlay.remove();
+      document.body.style.overflow = '';
+    };
+
+    const generatePrintHTML = () => {
+      const getVal = (id) => overlay.querySelector(`#${id}`)?.value || '';
+
+      const carLabel = getVal('c-car-label');
+      const vin = getVal('c-vin');
+      const engineNo = getVal('c-engine-no');
+      const plate = getVal('c-plate');
+      const regNo = getVal('c-reg-no');
+      const titleNo = getVal('c-title-no');
+      const year = getVal('c-year');
+      const mileage = getVal('c-mileage');
+      const price = getVal('c-price');
+
+      const sellerName = getVal('c-seller-name');
+      const sellerBirth = getVal('c-seller-birthname');
+      const sellerPlace = getVal('c-seller-birthplace');
+      const sellerMother = getVal('c-seller-mother');
+      const sellerId = getVal('c-seller-idno');
+      const sellerAddr = getVal('c-seller-address');
+
+      const buyerName = getVal('c-buyer-name');
+      const buyerBirth = getVal('c-buyer-birthname');
+      const buyerPlace = getVal('c-buyer-birthplace');
+      const buyerMother = getVal('c-buyer-mother');
+      const buyerId = getVal('c-buyer-idno');
+      const buyerAddr = getVal('c-buyer-address');
+
+      const w1Name = getVal('c-w1-name');
+      const w1Addr = getVal('c-w1-addr');
+      const w2Name = getVal('c-w2-name');
+      const w2Addr = getVal('c-w2-addr');
+
+      const copies = ['1. Példány - VEVŐÉ', '2. Példány - ELADÓÉ', '3. Példány - OKMÁNYIRODÁÉ (VEVŐ)', '4. Példány - OKMÁNYIRODÁÉ (ELADÓ)'];
+      const todayStr = new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      return copies.map((copyLabel) => `
+        <div class="contract-page">
+          <div class="contract-copy-badge">${copyLabel}</div>
+          <div class="contract-title">GÉPJÁRMŰ ADÁSVÉTELI SZERZŐDÉS</div>
+          <div class="contract-subtitle">Amely létrejött a mai napon az alulírott felek között az alábbi feltételekkel:</div>
+
+          <div class="contract-section-header">1. ELADÓ (Jelenlegi tulajdonos)</div>
+          <div class="contract-grid">
+            <div class="contract-field"><span class="contract-field-label">Név / Cég:</span> <span class="contract-field-val">${escapeHtml(sellerName)}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Születési név:</span> <span class="contract-field-val">${escapeHtml(sellerBirth || '-')}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Szül. hely, idő:</span> <span class="contract-field-val">${escapeHtml(sellerPlace || '-')}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Anyja neve:</span> <span class="contract-field-val">${escapeHtml(sellerMother || '-')}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Szem.ig. / Adószám:</span> <span class="contract-field-val">${escapeHtml(sellerId)}</span></div>
+            <div class="contract-field contract-full-width"><span class="contract-field-label">Lakcím / Székhely:</span> <span class="contract-field-val">${escapeHtml(sellerAddr)}</span></div>
+          </div>
+
+          <div class="contract-section-header">2. VEVŐ (Új tulajdonos)</div>
+          <div class="contract-grid">
+            <div class="contract-field"><span class="contract-field-label">Név / Cég:</span> <span class="contract-field-val">${escapeHtml(buyerName)}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Születési név:</span> <span class="contract-field-val">${escapeHtml(buyerBirth || '-')}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Szül. hely, idő:</span> <span class="contract-field-val">${escapeHtml(buyerPlace || '-')}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Anyja neve:</span> <span class="contract-field-val">${escapeHtml(buyerMother || '-')}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Szem.ig. / Adószám:</span> <span class="contract-field-val">${escapeHtml(buyerId)}</span></div>
+            <div class="contract-field contract-full-width"><span class="contract-field-label">Lakcím / Székhely:</span> <span class="contract-field-val">${escapeHtml(buyerAddr)}</span></div>
+          </div>
+
+          <div class="contract-section-header">3. A GÉPJÁRMŰ ADATAI</div>
+          <div class="contract-grid">
+            <div class="contract-field"><span class="contract-field-label">Gyártmány, típus:</span> <span class="contract-field-val">${escapeHtml(carLabel)}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Alvázszám (VIN):</span> <span class="contract-field-val">${escapeHtml(vin)}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Motorszám / kód:</span> <span class="contract-field-val">${escapeHtml(engineNo || '-')}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Rendszám:</span> <span class="contract-field-val">${escapeHtml(plate || '-')}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Forgalmi engedély:</span> <span class="contract-field-val">${escapeHtml(regNo)}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Törzskönyv száma:</span> <span class="contract-field-val">${escapeHtml(titleNo)}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Évjárat:</span> <span class="contract-field-val">${escapeHtml(year || '-')}</span></div>
+            <div class="contract-field"><span class="contract-field-label">Km óra állás:</span> <span class="contract-field-val">${escapeHtml(Number(mileage).toLocaleString('hu-HU'))} km</span></div>
+          </div>
+
+          <div class="contract-section-header">4. VÉTELÁR ÉS FIZETÉSI FELTÉTELEK</div>
+          <div class="contract-legal-text">
+            A gépjármű kölcsönösen megállapodott vételára: <strong>${escapeHtml(formatCurrency(price))}</strong>, azaz ${escapeHtml(formatCurrency(price))} forint.
+            Az Eladó a vételár hiánytalan átvételét a szerződés aláírásával elismeri és igazolja. A Vevő a gépjárművet megtekintett, megvizsgált állapotban veszi át.
+          </div>
+
+          <div class="contract-signatures-grid">
+            <div class="contract-sig-box">Eladó (Saját kezű aláírás)</div>
+            <div class="contract-sig-box">Vevő (Saját kezű aláírás)</div>
+          </div>
+
+          <div class="contract-witness-section">
+            <div style="font-weight:bold; font-size:9.5pt; margin-bottom:6px;">TANÚK (A szerződés kötelező alaki kelléke):</div>
+            <div class="contract-grid">
+              <div class="contract-field"><span class="contract-field-label">1. Tanú Neve:</span> <span class="contract-field-val">${escapeHtml(w1Name || '-')}</span></div>
+              <div class="contract-field"><span class="contract-field-label">2. Tanú Neve:</span> <span class="contract-field-val">${escapeHtml(w2Name || '-')}</span></div>
+              <div class="contract-field"><span class="contract-field-label">Lakcím:</span> <span class="contract-field-val">${escapeHtml(w1Addr || '-')}</span></div>
+              <div class="contract-field"><span class="contract-field-label">Lakcím:</span> <span class="contract-field-val">${escapeHtml(w2Addr || '-')}</span></div>
+            </div>
+            <div class="contract-signatures-grid" style="margin-top:15px;">
+              <div class="contract-sig-box" style="padding-top:20px;">1. Tanú aláírása</div>
+              <div class="contract-sig-box" style="padding-top:20px;">2. Tanú aláírása</div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px; text-align:right; font-size:9pt; color:#444;">Kelt: ${todayStr}</div>
+        </div>
+      `).join('');
+    };
+
+    overlay.querySelector('#btn-print-contract').onclick = () => {
+      const vin = overlay.querySelector('#c-vin').value.trim();
+      const regNo = overlay.querySelector('#c-reg-no').value.trim();
+      if (!vin || !regNo) {
+        showToast('Az Alvázszám és a Forgalmi engedély száma kötelező a nyomtatáshoz!', 'error');
+        return;
+      }
+
+      let printArea = document.getElementById('contract-print-area');
+      if (!printArea) {
+        printArea = document.createElement('div');
+        printArea.id = 'contract-print-area';
+        document.body.appendChild(printArea);
+      }
+
+      printArea.innerHTML = generatePrintHTML();
+      window.print();
+    };
+
+    overlay.querySelector('#btn-save-contract-db').onclick = async () => {
+      const getVal = (id) => overlay.querySelector(`#${id}`)?.value || '';
+      const sellerName = getVal('c-seller-name');
+      const buyerName = getVal('c-buyer-name');
+      const carLabel = getVal('c-car-label');
+      const price = Number(getVal('c-price')) || 0;
+
+      if (!sellerName || !buyerName) {
+        showToast('Az Eladó és a Vevő nevének megadása kötelező a mentéshez.', 'error');
+        return;
+      }
+
+      try {
+        await dbService.saveContract({
+          car_id: car.id,
+          seller_name: sellerName,
+          buyer_name: buyerName,
+          car_label: carLabel,
+          price: price,
+          contract_data: {
+            vin: getVal('c-vin'),
+            engineNo: getVal('c-engine-no'),
+            plate: getVal('c-plate'),
+            regNo: getVal('c-reg-no'),
+            titleNo: getVal('c-title-no'),
+            year: getVal('c-year'),
+            mileage: getVal('c-mileage'),
+            sellerAddress: getVal('c-seller-address'),
+            buyerAddress: getVal('c-buyer-address'),
+            witness1: getVal('c-w1-name'),
+            witness2: getVal('c-w2-name')
+          }
+        });
+        showToast('Szerződés elmentve a Supabase adatbázisba.', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
   }
 }

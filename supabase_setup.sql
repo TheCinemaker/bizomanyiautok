@@ -205,9 +205,55 @@ BEGIN
   END IF;
 EXCEPTION
   WHEN OTHERS THEN
-    -- Ha a publikáció nem létezik vagy nincs jogosultság, ne álljon le a telepítő
     NULL;
 END $$;
+
+
+-- ----------------------------------------------------------------------------
+-- 8. Műszaki érvényesség mező a 'cars' táblához
+-- ----------------------------------------------------------------------------
+ALTER TABLE public.cars ADD COLUMN IF NOT EXISTS inspection_validity TEXT;
+
+
+-- ----------------------------------------------------------------------------
+-- 9. Szerviz- és javítási napló tábla ('service_logs')
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.service_logs (
+    id           BIGSERIAL PRIMARY KEY,
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    car_id       TEXT NOT NULL,
+    service_date DATE DEFAULT CURRENT_DATE,
+    description  TEXT NOT NULL,
+    cost         NUMERIC DEFAULT 0,
+    performed_by TEXT
+);
+
+ALTER TABLE public.service_logs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "service_logs_admin_all" ON public.service_logs;
+CREATE POLICY "service_logs_admin_all" ON public.service_logs
+    FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+
+-- ----------------------------------------------------------------------------
+-- 10. Hivatalos adásvételi szerződések tábla ('contracts')
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.contracts (
+    id           TEXT PRIMARY KEY,
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    car_id       TEXT,
+    seller_name  TEXT NOT NULL,
+    buyer_name   TEXT NOT NULL,
+    car_label    TEXT NOT NULL,
+    price        NUMERIC NOT NULL,
+    contract_data JSONB NOT NULL
+);
+
+ALTER TABLE public.contracts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "contracts_admin_all" ON public.contracts;
+CREATE POLICY "contracts_admin_all" ON public.contracts
+    FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 
 -- ============================================================================

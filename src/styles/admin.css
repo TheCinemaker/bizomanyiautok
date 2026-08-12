@@ -979,3 +979,163 @@
   background: var(--accent-danger);
   color: var(--text-inverse);
 }
+
+.btn-service-log,
+.btn-generate-contract {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-service-log {
+  background: rgba(197, 168, 128, 0.15);
+  color: var(--accent-gold);
+  border: 1px solid rgba(197, 168, 128, 0.3);
+}
+
+.btn-service-log:hover {
+  background: var(--accent-gold);
+  color: var(--text-inverse);
+}
+
+.btn-generate-contract {
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--accent-dark);
+  border: 1px solid var(--border-light);
+}
+
+.btn-generate-contract:hover {
+  background: var(--accent-dark);
+  color: var(--text-inverse);
+}
+
+/* Service Log Modal Styles */
+.service-add-box {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.service-form-title,
+.service-history-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.service-total-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.service-log-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.service-log-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.service-log-date-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.service-log-date {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.service-log-cost {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+}
+
+.service-log-desc {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.service-log-by {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.btn-delete-service-item {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-danger);
+  border: none;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Contract Modal Styles */
+.contract-form-section {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.contract-form-sec-title {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 6px;
+}
+
+.contract-actions-bar {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-save-contract {
+  padding: 12px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hover);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}

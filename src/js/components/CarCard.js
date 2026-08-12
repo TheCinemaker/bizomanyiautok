@@ -22,6 +22,7 @@ export function createCarCard(car, onClick) {
   const metaItems = [];
   if (Number(car.mileage) > 0) metaItems.push(formatMileage(car.mileage));
   if (car.transmission) metaItems.push(car.transmission);
+  if (car.inspection_validity) metaItems.push(`Műszaki: ${car.inspection_validity}`);
 
   card.innerHTML = `
     <div class="car-card-media">

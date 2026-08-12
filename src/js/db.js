@@ -8,7 +8,7 @@ const STORAGE_BUCKET = 'car-photos';
 
 /** A rács csak ezeket az oszlopokat használja - a teljes leírást
  *  fölösleges letölteni a listához. */
-const LIST_COLUMNS = 'id,created_at,make,model,price,year,mileage,displacement,power,fuel,transmission,color,condition,description,images';
+const LIST_COLUMNS = 'id,created_at,make,model,price,year,mileage,displacement,power,fuel,transmission,color,condition,description,images,inspection_validity';
 
 /** Hibaosztály, amit a felület meg tud különböztetni az "üres kínálat"-tól. */
 export class DataUnavailableError extends Error {
@@ -332,6 +332,100 @@ class DataService {
         }
       )
       .subscribe();
+  }
+
+  // -------------------------------------------------------- Szerviznapló ----
+
+  async getServiceLogs(carId) {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
+
+    const { data, error } = await this.supabase
+      .from('service_logs')
+      .select('*')
+      .eq('car_id', carId)
+      .order('service_date', { ascending: false });
+
+    if (error) throw this.describeWriteError(error);
+    return data || [];
+  }
+
+  async addServiceLog(logData) {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
+
+    const { data, error } = await this.supabase
+      .from('service_logs')
+      .insert([logData])
+      .select();
+
+    if (error) throw this.describeWriteError(error);
+    return data ? data[0] : logData;
+  }
+
+  async deleteServiceLog(logId) {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
+
+    const { error } = await this.supabase
+      .from('service_logs')
+      .delete()
+      .eq('id', logId);
+
+    if (error) throw this.describeWriteError(error);
+    return true;
+  }
+
+  // --------------------------------------------------------- Szerződések ----
+
+  async getContracts() {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
+
+    const { data, error } = await this.supabase
+      .from('contracts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw this.describeWriteError(error);
+    return data || [];
+  }
+
+  async saveContract(contractData) {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
+
+    const payload = {
+      id: contractData.id || `contract-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      car_id: contractData.car_id || null,
+      seller_name: contractData.seller_name || '',
+      buyer_name: contractData.buyer_name || '',
+      car_label: contractData.car_label || '',
+      price: Number(contractData.price) || 0,
+      contract_data: contractData.contract_data || {}
+    };
+
+    const { data, error } = await this.supabase
+      .from('contracts')
+      .insert([payload])
+      .select();
+
+    if (error) throw this.describeWriteError(error);
+    return data ? data[0] : payload;
+  }
+
+  async deleteContract(contractId) {
+    if (!this.supabase) throw new Error('Nincs adatbázis kapcsolat.');
+    await this.ensureActiveSession();
+
+    const { error } = await this.supabase
+      .from('contracts')
+      .delete()
+      .eq('id', contractId);
+
+    if (error) throw this.describeWriteError(error);
+    return true;
   }
 }
 
