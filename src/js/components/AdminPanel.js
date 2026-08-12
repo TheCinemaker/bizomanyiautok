@@ -34,6 +34,25 @@ export class AdminPanel {
   // -------------------------------------------------------- Belépési pont ----
 
   setupLongPressTrigger() {
+    // 1. Fejléc Admin gomb
+    const headerAdminBtn = document.getElementById('btn-admin-header');
+    if (headerAdminBtn) {
+      headerAdminBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.requestAccess();
+      });
+    }
+
+    // 2. Lábléc Adminisztráció hivatkozás
+    const footerAdminLink = document.getElementById('footer-admin-link');
+    if (footerAdminLink) {
+      footerAdminLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.requestAccess();
+      });
+    }
+
+    // 3. Logó nyomvatartásos belépés
     const logoEl = document.getElementById('brand-logo-trigger');
     if (!logoEl) return;
 
@@ -56,7 +75,6 @@ export class AdminPanel {
       logoEl.classList.remove('holding-admin');
     };
 
-    // A logó a főoldalra visz - kivéve, ha épp az admin nyomvatartás történt.
     logoEl.addEventListener('click', (e) => {
       if (triggered) {
         e.preventDefault();
@@ -64,21 +82,12 @@ export class AdminPanel {
       }
     });
 
-    const footerAdminLink = document.getElementById('footer-admin-link');
-    if (footerAdminLink) {
-      footerAdminLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.requestAccess();
-      });
-    }
-
     logoEl.addEventListener('mousedown', startPress);
     logoEl.addEventListener('mouseup', cancelPress);
     logoEl.addEventListener('mouseleave', cancelPress);
     logoEl.addEventListener('touchstart', startPress, { passive: true });
     logoEl.addEventListener('touchend', cancelPress);
     logoEl.addEventListener('touchcancel', cancelPress);
-    // Mobilon a hosszú nyomás ne hozza fel a rendszer menüjét.
     logoEl.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
