@@ -1054,6 +1054,40 @@ export class AdminPanel {
 
   // ------------------------------------------------------------ Nyit/zár ----
 
+  openAdminModal() {
+    const overlay = document.getElementById('admin-dashboard-modal');
+    if (!overlay) return;
+
+    const emailEl = overlay.querySelector('#admin-user-email');
+    if (emailEl) emailEl.textContent = this.currentUser?.email || '';
+
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    this.updateInquiryBadge();
+    this.setupInquiryRealtime();
+
+    this.releaseFocusTrap = trapFocus(overlay.querySelector('.admin-container'));
+  }
+
+  closeAdminModal() {
+    const overlay = document.getElementById('admin-dashboard-modal');
+    if (!overlay) return;
+
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+
+    if (this.realtimeChannel) {
+      dbService.supabase?.removeChannel(this.realtimeChannel);
+      this.realtimeChannel = null;
+    }
+
+    if (this.releaseFocusTrap) {
+      this.releaseFocusTrap();
+      this.releaseFocusTrap = null;
+    }
+  }
+
   // -------------------------------------------------------- Szerviznapló Modal ----
 
   async openServiceLogModal(car) {
